@@ -148,7 +148,7 @@ DungeonPos DungeonGrid::GetRandomDoorPos(DungeonPos TopLeft, DungeonPos BottomRi
 			return DungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), TopLeft.Y};
 		case East:
 			return DungeonPos{BottomRight.X - 1, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
-	case South:
+		case South:
 			return DungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), BottomRight.Y - 1};
 		case West:
 			return DungeonPos{TopLeft.X, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
@@ -302,7 +302,7 @@ bool DungeonGrid::GrabRoomInfo(DungeonPos Pos, RoomInfo& RoomInfo, std::vector<D
 
 bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos Target, std::vector<DungeonPos>& Path)
 {
-	struct SearchNode
+	/*struct SearchNode
 	{
 		SearchNode* From;
 		DungeonPos Pos;
@@ -338,8 +338,10 @@ bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos
 		if (Grid.IsValidPosition(Right)) { Neighbors.push_back(Right); }
 	};
 
-	std::unordered_set<DungeonPos> Closed{};
-	std::priority_queue<SearchNode, Comp> Open{SearchNode{nullptr, Start, 0}};
+	std::unordered_set<DungeonPos, std::hash<DungeonPos>> Closed{};
+
+	std::vector<SearchNode> OpenNodes{SearchNode{nullptr, Start, 0}};
+	std::priority_queue<SearchNode, std::vector<SearchNode>, Comp> Open{OpenNodes.begin(), OpenNodes.end()};
 
 	while (!Open.empty())
 	{
@@ -352,7 +354,7 @@ bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos
 		}
 
 		Open.pop();
-	}
+	}*/
 	
 	
 	return false;
