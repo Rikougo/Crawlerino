@@ -3,8 +3,6 @@
 
 #include "CrawlerTerrainGenerator.h"
 
-#include "MovieSceneTracksComponentTypes.h"
-
 // Sets default values
 ACrawlerTerrainGenerator::ACrawlerTerrainGenerator()
 {
