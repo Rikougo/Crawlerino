@@ -150,7 +150,7 @@ void ACombatPawn::InitAtRoom(int PosX, int PosY, Direction Direction, FVector Ca
 	Crawlerino::DungeonGrid& Grid = _DungeonSubsystem->GetDungeonGrid();
 
 	Crawlerino::RoomInfo RoomInfo;
-	std::vector<DungeonPos> TilePositions{};
+	std::vector<FDungeonPos> TilePositions{};
 	if (!Grid.GrabRoomInfo({PosX, PosY}, RoomInfo, TilePositions, 4)) return;
 
 	/*for (auto TilePos : TilePositions)

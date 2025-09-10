@@ -26,6 +26,11 @@ constexpr Color RoomColors[] = {
 };
 
 /**
+ * Forward declaration of MonsterPawn.h defined class
+ */
+class CRAWLERINO_API AMonsterPawn;
+
+/**
  * 
  */
 UCLASS()
@@ -55,6 +60,8 @@ private:
     uint32 _TextureDataSize; // Total Bytes of Texture Data
     uint32 _TextureDataSqrtSize; // Texture Data Sqrt Size
     uint32 _TextureTotalPixels; // Total Count of Pixels in Texture
+
+	std::vector<AMonsterPawn*> _Monsters;
 private:
 
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
@@ -66,10 +73,33 @@ private:
 	virtual TStatId GetStatId() const override { return TStatId(); }
 	// FTickableGameObject implementation End
 
-public: // Grid management 
-	DungeonPos GetStartPos() const { return _DungeonGrid->StartPos(); }
+public: // Grid management
+	UFUNCTION(BlueprintPure)
+	FDungeonPos GetSize() const { return FDungeonPos{_DungeonGrid->Width(), _DungeonGrid->Height()}; }
 
+	UFUNCTION(BlueprintPure)
+	FDungeonPos GetStartPos() const { return _DungeonGrid->StartPos(); }
+	
+	UFUNCTION(BlueprintPure)
+	FDungeonPos GetRandomWalkablePos() const
+	{
+		FDungeonPos Result{};
+		do
+		{
+			Result.X = FMath::RandRange(0, _DungeonGrid->Width() - 1);
+			Result.Y = FMath::RandRange(0, _DungeonGrid->Height() - 1);
+		} while (!_DungeonGrid->CanMoveTo(Result.X, Result.Y));
+
+		return Result;
+	}
+	
 	Crawlerino::DungeonGrid& GetDungeonGrid() const { return *_DungeonGrid; }
+public: // Monster management
+	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
+	AMonsterPawn* SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos);
+
+	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
+	AMonsterPawn* GetMonsterPawn(const FDungeonPos& Pos) const;
 public: // Texture management 
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* GetRoomTexture() const { return _DungeonTexture; }

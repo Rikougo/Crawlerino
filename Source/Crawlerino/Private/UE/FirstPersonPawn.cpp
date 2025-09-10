@@ -208,9 +208,9 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 	bool IsXInput = abs(InputDir.X) > 0.0f;
 	int Sign = IsXInput ? InputDir.X > 0.0f ? 1 : -1 : InputDir.Y > 0.0f ? 1 : -1;
 	FVector3d Pos = GetActorLocation();
-	DungeonPos TargetPos = IsXInput
-		                       ? DungeonPos(_TerrainPos.X + Sign, _TerrainPos.Y)
-		                       : DungeonPos(_TerrainPos.X, _TerrainPos.Y + Sign);
+	FDungeonPos TargetPos = IsXInput
+		                       ? FDungeonPos(_TerrainPos.X + Sign, _TerrainPos.Y)
+		                       : FDungeonPos(_TerrainPos.X, _TerrainPos.Y + Sign);
 
 	if (_Dungeon->GetDungeonGrid().CanMoveTo(TargetPos.X, TargetPos.Y))
 	{

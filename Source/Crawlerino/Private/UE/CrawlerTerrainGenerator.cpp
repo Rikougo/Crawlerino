@@ -111,7 +111,7 @@ void ACrawlerTerrainGenerator::TryGenerateWall(TArray<FVector>& Vertices,
 		break;
 	}
 
-	bool IsValidCoords = _Dungeon->GetDungeonGrid().IsValidPosition(DungeonPos{nX, nY});
+	bool IsValidCoords = _Dungeon->GetDungeonGrid().IsValidPosition(FDungeonPos{nX, nY});
 	float Value = IsValidCoords ? _Dungeon->GetDungeonGrid().GetValue(nX, nY) : 0.0f;
 
 	FVector OriginCenter = FVector(X * CellSize, Y * CellSize, 0.0f);

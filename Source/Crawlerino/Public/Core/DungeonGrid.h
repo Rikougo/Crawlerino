@@ -5,8 +5,9 @@
 #include <vector>
 
 #include "IntVectorTypes.h"
+#include "Core/FDungeonPos.h"
 
-using DungeonPos = UE::Geometry::FVector2i;
+// using FDungeonPos = UE::Geometry::FVector2i;
 
 // --- CORE UTILS
 UENUM(BlueprintType)
@@ -81,7 +82,7 @@ namespace Crawlerino
 	struct DungeonTile
 	{
 		int Value{-1};
-		DungeonPos Pos{-1, -1};
+		FDungeonPos Pos{-1, -1};
 	};
 
 	struct RoomDescriptor
@@ -93,8 +94,8 @@ namespace Crawlerino
 	struct RoomInfo
 	{
 		int RoomIndex{-1};
-		DungeonPos MinRoomPos{-1, -1};
-		DungeonPos MaxRoomPos{-1, -1};
+		FDungeonPos MinRoomPos{-1, -1};
+		FDungeonPos MaxRoomPos{-1, -1};
 	};
 	
 	class CRAWLERINO_API DungeonGrid
@@ -110,10 +111,10 @@ namespace Crawlerino
 		static void GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescriptor>& RoomsToPlace);
 
 		// Room placing utils methods
-		static bool DoesRoomFit(const DungeonGrid& Grid, DungeonPos TopLeft, DungeonPos Size);
-		static Direction GetRandomDoorDirection(const DungeonGrid& Grid, DungeonPos TopLeft);
-		static DungeonPos GetRandomDoorPos(DungeonPos TopLeft, DungeonPos BottomRight, Direction Facing);
-		static int GetNearestDoor(int From, const std::vector<DungeonPos>& Doors, std::vector<bool> Connected);
+		static bool DoesRoomFit(const DungeonGrid& Grid, FDungeonPos TopLeft, FDungeonPos Size);
+		static Direction GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft);
+		static FDungeonPos GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, Direction Facing);
+		static int GetNearestDoor(int From, const std::vector<FDungeonPos>& Doors, std::vector<bool> Connected);
 	public:
 		DungeonGrid() = delete;
 		DungeonGrid(int Height, int Width);
@@ -121,21 +122,21 @@ namespace Crawlerino
 	public:
 		int Height() const { return _Height; }
 		int Width() const { return _Width; }
-		bool IsValidPosition(DungeonPos Pos) const { return Pos.X >= 0 && Pos.X < _Width && Pos.Y >= 0 && Pos.Y < _Height; }
-		DungeonPos StartPos() const { return _StartPos; }
+		bool IsValidPosition(FDungeonPos Pos) const { return Pos.X >= 0 && Pos.X < _Width && Pos.Y >= 0 && Pos.Y < _Height; }
+		FDungeonPos StartPos() const { return _StartPos; }
 		int GetValue(int X, int Y) const;
 		bool CanMoveTo(int X, int Y) const;
 
-		int GetRoomIndex(DungeonPos Pos) const;
-		bool GrabRoomInfo(DungeonPos Pos, RoomInfo& RoomInfo, std::vector<DungeonPos>& TilePositions, int Radius) const;
+		int GetRoomIndex(FDungeonPos Pos) const;
+		bool GrabRoomInfo(FDungeonPos Pos, RoomInfo& RoomInfo, std::vector<FDungeonPos>& TilePositions, int Radius) const;
 	private:
 		void SetValue(int X, int Y, int Value);
-		void SetStartPos(DungeonPos StartPos);
+		void SetStartPos(FDungeonPos StartPos);
 	private:
 		int _Height, _Width;
-		DungeonPos _StartPos;
+		FDungeonPos _StartPos;
 		std::vector<DungeonTile> _Data;
 	};
 	
-	static bool GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos Target, std::vector<DungeonPos>& Path);
+	static bool GetShortestPath(DungeonGrid& Grid, FDungeonPos Start, FDungeonPos Target, std::vector<FDungeonPos>& Path);
 }

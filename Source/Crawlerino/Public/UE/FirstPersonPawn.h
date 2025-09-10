@@ -94,12 +94,15 @@ protected:
 	void AnimateMove(float Progress);
 	void AnimateLook(float Progress);
 	void FinalizeAnimation(ActionType Action);
-
-	UFUNCTION(BlueprintPure)
+	
+	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
 	int GetDungeonPosX() const { return _TerrainPos.X; } 
 
+	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
+	int GetDungeonPosY() const { return _TerrainPos.Y; }
+
 	UFUNCTION(BlueprintPure)
-	int GetDungeonPosY() const { return _TerrainPos.Y; } 
+	FDungeonPos GetPos() const { return _TerrainPos; }
 
 	UFUNCTION(BlueprintPure)
 	int GetCurrentRoom() const { return _Dungeon->GetDungeonGrid().GetRoomIndex(_TerrainPos);};
@@ -137,7 +140,7 @@ private:
 
 	// Positional data
 	Direction _Facing;
-	DungeonPos _TerrainPos;
+	FDungeonPos _TerrainPos;
 
 	// Walk animation
 	bool _IsWalking;

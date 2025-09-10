@@ -8,9 +8,9 @@
 
 using namespace Crawlerino;
 
-void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescriptor>&  RoomsToPlace)// int RoomToPlace, DungeonPos MinRoomSize, DungeonPos MaxRoomSize)
+void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescriptor>&  RoomsToPlace)// int RoomToPlace, FDungeonPos MinRoomSize, FDungeonPos MaxRoomSize)
 {
-	std::vector<DungeonPos> DoorPositions(RoomsToPlace.size());
+	std::vector<FDungeonPos> DoorPositions(RoomsToPlace.size());
 
 	int Width = Grid.Width();
 	int Height = Grid.Height();
@@ -19,10 +19,10 @@ void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescr
 	for (int i = 0; i < RoomsToPlace.size(); i++)
 	{
 		RoomDescriptor Room = RoomsToPlace[i];
-		DungeonPos RoomSize = DungeonPos{Room.Width, Room.Height};
+		FDungeonPos RoomSize = FDungeonPos{Room.Width, Room.Height};
 
 		// Find suitable position for room
-		DungeonPos TopLeftCorner;
+		FDungeonPos TopLeftCorner;
 		do
 		{
 			TopLeftCorner = {FMath::RandRange(0, Width - 1), FMath::RandRange(0, Height - 1)};
@@ -33,7 +33,7 @@ void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescr
 			Grid.SetStartPos(TopLeftCorner);
 		}
 
-		DungeonPos BottomRightCorner = TopLeftCorner + RoomSize;
+		FDungeonPos BottomRightCorner = TopLeftCorner + RoomSize;
 
 		Direction DoorDirection = GetRandomDoorDirection(Grid, TopLeftCorner);
 		DoorPositions[i] = GetRandomDoorPos(TopLeftCorner, BottomRightCorner, DoorDirection);;
@@ -66,8 +66,8 @@ void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescr
 
 		if (Nearest == -1) break;
 
-		DungeonPos From = DoorPositions[Index];
-		DungeonPos To = DoorPositions[Nearest];
+		FDungeonPos From = DoorPositions[Index];
+		FDungeonPos To = DoorPositions[Nearest];
 
 		while (From != To)
 		{
@@ -87,9 +87,9 @@ void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescr
 	}
 }
 
-bool DungeonGrid::DoesRoomFit(const DungeonGrid& Grid, DungeonPos TopLeft, DungeonPos Size)
+bool DungeonGrid::DoesRoomFit(const DungeonGrid& Grid, FDungeonPos TopLeft, FDungeonPos Size)
 {
-	DungeonPos BottomRight = TopLeft + Size;
+	FDungeonPos BottomRight = TopLeft + Size;
 	
 	for (int Y = TopLeft.Y; Y < BottomRight.Y; Y++)
 	{
@@ -110,7 +110,7 @@ bool DungeonGrid::DoesRoomFit(const DungeonGrid& Grid, DungeonPos TopLeft, Dunge
 	return true;
 }
 
-Direction DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, DungeonPos TopLeft)
+Direction DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft)
 {
 	Direction Dir = Direction::North;
 	int Dice = FMath::RandRange(0, 1);
@@ -140,25 +140,25 @@ Direction DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, DungeonPo
 	return Dir;
 }
 
-DungeonPos DungeonGrid::GetRandomDoorPos(DungeonPos TopLeft, DungeonPos BottomRight, Direction Facing)
+FDungeonPos DungeonGrid::GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, Direction Facing)
 {
 	switch (Facing)
 	{
 		case North:
-			return DungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), TopLeft.Y};
+			return FDungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), TopLeft.Y};
 		case East:
-			return DungeonPos{BottomRight.X - 1, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
+			return FDungeonPos{BottomRight.X - 1, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
 		case South:
-			return DungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), BottomRight.Y - 1};
+			return FDungeonPos{FMath::RandRange(TopLeft.X, BottomRight.X - 1), BottomRight.Y - 1};
 		case West:
-			return DungeonPos{TopLeft.X, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
+			return FDungeonPos{TopLeft.X, FMath::RandRange(TopLeft.Y, BottomRight.Y - 1)};
 	}
 	return {-1, -1};
 }
 
-int DungeonGrid::GetNearestDoor(int From, const std::vector<DungeonPos>& Doors, std::vector<bool> Connected)
+int DungeonGrid::GetNearestDoor(int From, const std::vector<FDungeonPos>& Doors, std::vector<bool> Connected)
 {
-	DungeonPos FromPos = Doors[From];
+	FDungeonPos FromPos = Doors[From];
 
 	int Result = -1;
 	int MinDistance = INT_MAX;
@@ -179,7 +179,7 @@ int DungeonGrid::GetNearestDoor(int From, const std::vector<DungeonPos>& Doors, 
 			continue;
 		}
 
-		DungeonPos ToPos = Doors[i];
+		FDungeonPos ToPos = Doors[i];
 		int Dist = abs(FromPos.X - ToPos.X) + abs(FromPos.Y - ToPos.Y);
 
 		if (Dist < MinDistance)
@@ -206,9 +206,9 @@ DungeonGrid::DungeonGrid(int Height, int Width)
 	_Data = std::vector<DungeonTile>(0);
 	for (int i = 0; i < _Height * _Width; i++)
 	{
-		_Data.push_back(DungeonTile{0, DungeonPos{i % _Width, i / _Width}});
+		_Data.push_back(DungeonTile{0, FDungeonPos{i % _Width, i / _Width}});
 	}
-	_StartPos = DungeonPos{0, 0};
+	_StartPos = FDungeonPos{0, 0};
 }
 
 DungeonGrid::~DungeonGrid()
@@ -230,7 +230,7 @@ void DungeonGrid::SetValue(int X, int Y, int Value)
 	_Data[Y * _Width + X].Value = Value;
 }
 
-void DungeonGrid::SetStartPos(DungeonPos StartPos)
+void DungeonGrid::SetStartPos(FDungeonPos StartPos)
 {
 	check(StartPos.X >= 0 && StartPos.X < _Width && StartPos.Y >= 0 && StartPos.Y < _Height);
 
@@ -247,23 +247,23 @@ bool DungeonGrid::CanMoveTo(int X, int Y) const
 	return false;
 }
 
-int DungeonGrid::GetRoomIndex(DungeonPos Pos) const
+int DungeonGrid::GetRoomIndex(FDungeonPos Pos) const
 {
 	check(Pos.X >= 0 && Pos.X < _Width && Pos.Y >= 0 && Pos.Y < _Height);
 	int Value = GetValue(Pos.X, Pos.Y);
 	return Value > 1 ? Value : -1;
 }
 
-bool DungeonGrid::GrabRoomInfo(DungeonPos Pos, RoomInfo& RoomInfo, std::vector<DungeonPos>& TilePositions, int Radius) const
+bool DungeonGrid::GrabRoomInfo(FDungeonPos Pos, RoomInfo& RoomInfo, std::vector<FDungeonPos>& TilePositions, int Radius) const
 {
-	DungeonPos MinTile{std::numeric_limits<int>::max(), std::numeric_limits<int>::max()};
-	DungeonPos MaxTile{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+	FDungeonPos MinTile{std::numeric_limits<int>::max(), std::numeric_limits<int>::max()};
+	FDungeonPos MaxTile{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
 	int TileAmount{0};
 
 	TilePositions.clear();
 	for (DungeonTile Data : _Data)
 	{
-		DungeonPos TilePos = Data.Pos;
+		FDungeonPos TilePos = Data.Pos;
 		int Dist = abs(TilePos.X - Pos.X) + abs(TilePos.Y - Pos.Y);
 
 		if (Dist <= Radius)
@@ -279,7 +279,7 @@ bool DungeonGrid::GrabRoomInfo(DungeonPos Pos, RoomInfo& RoomInfo, std::vector<D
 		}
 		/*if (Data.Value == RoomIndex)
 		{
-			DungeonPos TilePos = Data.Pos;
+			FDungeonPos TilePos = Data.Pos;
 			if (TilePos.X < MinTile.X) MinTile.X = TilePos.X;
 			if (TilePos.X > MaxTile.X) MaxTile.X = TilePos.X;
 			if (TilePos.Y < MinTile.Y) MinTile.Y = TilePos.Y;
@@ -300,12 +300,12 @@ bool DungeonGrid::GrabRoomInfo(DungeonPos Pos, RoomInfo& RoomInfo, std::vector<D
 	return true;
 }
 
-bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos Target, std::vector<DungeonPos>& Path)
+bool Crawlerino::GetShortestPath(DungeonGrid& Grid, FDungeonPos Start, FDungeonPos Target, std::vector<FDungeonPos>& Path)
 {
 	/*struct SearchNode
 	{
 		SearchNode* From;
-		DungeonPos Pos;
+		FDungeonPos Pos;
 		int Weight;
 	};
 
@@ -318,19 +318,19 @@ bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos
 		}
 	};
 
-	auto Dist = [](DungeonPos Origin, DungeonPos Target)
+	auto Dist = [](FDungeonPos Origin, FDungeonPos Target)
 	{
 		return abs(Target.X - Origin.X) + abs(Target.Y - Origin.Y);
 	};
 
-	auto GetNeighbors = [](const DungeonGrid& Grid , DungeonPos Pos, std::vector<DungeonPos>& Neighbors)
+	auto GetNeighbors = [](const DungeonGrid& Grid , FDungeonPos Pos, std::vector<FDungeonPos>& Neighbors)
 	{
 		Neighbors.clear();
 
-		DungeonPos Up{Pos.X, Pos.Y + 1};
-		DungeonPos Down{Pos.X, Pos.Y - 1};
-		DungeonPos Left{Pos.X + 1, Pos.Y};
-		DungeonPos Right{Pos.X - 1, Pos.Y};
+		FDungeonPos Up{Pos.X, Pos.Y + 1};
+		FDungeonPos Down{Pos.X, Pos.Y - 1};
+		FDungeonPos Left{Pos.X + 1, Pos.Y};
+		FDungeonPos Right{Pos.X - 1, Pos.Y};
 
 		if (Grid.IsValidPosition(Up)) { Neighbors.push_back(Up); }
 		if (Grid.IsValidPosition(Down)) { Neighbors.push_back(Down); }
@@ -338,7 +338,7 @@ bool Crawlerino::GetShortestPath(DungeonGrid& Grid, DungeonPos Start, DungeonPos
 		if (Grid.IsValidPosition(Right)) { Neighbors.push_back(Right); }
 	};
 
-	std::unordered_set<DungeonPos, std::hash<DungeonPos>> Closed{};
+	std::unordered_set<FDungeonPos, std::hash<FDungeonPos>> Closed{};
 
 	std::vector<SearchNode> OpenNodes{SearchNode{nullptr, Start, 0}};
 	std::priority_queue<SearchNode, std::vector<SearchNode>, Comp> Open{OpenNodes.begin(), OpenNodes.end()};
