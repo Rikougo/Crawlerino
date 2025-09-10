@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DungeonGrid.h"
+#include "Core/DungeonGrid.h"
 
 #include <queue>
 #include <unordered_set>
