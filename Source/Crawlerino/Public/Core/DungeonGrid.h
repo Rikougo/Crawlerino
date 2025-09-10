@@ -34,6 +34,30 @@ inline float EaseInOutCirc(float x)
 		       : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
 }
 
+inline float ClampAngle(float RawAngle)
+{
+	float Angle = static_cast<int>(RawAngle) % 360;
+	if (Angle < 0) { Angle += 360.0f; }
+	return Angle;
+}
+
+inline Direction DirFromAngle(float Angle)
+{
+	if (Angle > 315.0f || Angle < 45.0f)
+	{
+		return Direction::North;
+	} else if (Angle > 45.0f && Angle < 135.0f)
+	{
+		return Direction::East;
+	} else if (Angle > 135.0f && Angle < 225.0f)
+	{
+		return Direction::South;
+	} else /*(Angle > 225.0f && Angle < 315.0f)*/
+	{
+		return Direction::West;
+	}
+}
+
 /**
  * 
  */
@@ -48,7 +72,7 @@ namespace Crawlerino
 			case Direction::North: return   0.0f;
 			case Direction::East:  return  90.0f;
 			case Direction::South: return 180.0f;
-			case Direction::West:  return -90.0f;
+			case Direction::West:  return 270.0f;
 			default: return 0;
 		}
 	}

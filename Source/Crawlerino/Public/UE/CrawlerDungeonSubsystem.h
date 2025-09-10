@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "CoreMinimal.h"
-#include "DungeonGrid.h"
 #include "IntVectorTypes.h"
+#include "Core/DungeonGrid.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "CrawlerDungeonSubsystem.generated.h"
 

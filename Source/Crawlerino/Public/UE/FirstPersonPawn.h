@@ -25,14 +25,27 @@ enum ActionType
 	Moving  = 2
 };
 
+USTRUCT(BlueprintType)
+struct FFirstPersonPawnConfig
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	// Control animations
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AnimTime;
+	
+	// Look settings
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SensibilityX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SensibilityY;
+};
+
 UCLASS()
 class CRAWLERINO_API AFirstPersonPawn : public APawn
 {
 	GENERATED_BODY()
-private:
-	const int PawnMovementDelta = 100.0f;
-	
-	const float AnimationTime = 0.35f;
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UCameraComponent* Camera;
@@ -48,6 +61,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
 	UInputAction* LookRightAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
+	UInputAction* FreeLookButtonAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
+	UInputAction* FreeLookAction;
 public:
 	// Function signature
 	UPROPERTY(BlueprintAssignable)
@@ -61,6 +80,12 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintPure)
+	FFirstPersonPawnConfig GetConfiguration() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetConfiguration(const FFirstPersonPawnConfig& NewConfig);
 
 protected:
 	// Called when the game starts or when spawned
@@ -80,6 +105,15 @@ protected:
 	int GetCurrentRoom() const { return _Dungeon->GetDungeonGrid().GetRoomIndex(_TerrainPos);};
 
 	UFUNCTION(BlueprintPure)
+	bool IsMoving() const { return _IsWalking; }
+
+	UFUNCTION(BlueprintPure)
+	bool IsRotating() const { return _IsRotating; }
+
+	UFUNCTION(BlueprintPure)
+	bool IsLooking() const { return _IsLookingAround; }
+
+	UFUNCTION(BlueprintPure)
 	Direction GetFacingDirection() const { return _Facing; }
 private:
 	void StartActionAnimation(ActionType Type);
@@ -87,19 +121,36 @@ private:
 	void MoveCharacter(const FInputActionInstance& Instance);
 	void LookLeftCharacter(const FInputActionInstance& Instance);
 	void LookRightCharacter(const FInputActionInstance& Instance);
+	void FreeLookButtonInput(const FInputActionInstance& Instance);
 private:
+	// Config
+	float _PawnMovementDelta = 100.0f;
+	FFirstPersonPawnConfig _Config {
+		0.35f,
+		1.0f,
+		1.0f
+	};
+	
+	// References
 	UCrawlerDungeonSubsystem* _Dungeon;
+	APlayerController* _PlayerController;
+
+	// Positional data
 	Direction _Facing;
 	DungeonPos _TerrainPos;
-	
-	
+
+	// Walk animation
 	bool _IsWalking;
 	float _WalkingStart;
 	FVector2D _TargetPosition;
 
+	// Rotate input animation
 	bool _IsRotating;
 	float _RotatingStart;
 	FRotator _TargetRotation;
+
+	// Free look handling
+	bool _IsLookingAround;
 };
 
 
