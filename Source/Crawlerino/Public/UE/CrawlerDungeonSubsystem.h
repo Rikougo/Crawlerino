@@ -37,20 +37,6 @@ UCLASS()
 class CRAWLERINO_API UCrawlerDungeonSubsystem : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
-
-private:
-	std::unique_ptr<Crawlerino::DungeonGrid> _DungeonGrid;
-
-	const std::vector<Crawlerino::RoomDescriptor> _RoomsToPlace {
-		Crawlerino::RoomDescriptor{2,2},
-		Crawlerino::RoomDescriptor{2,2},
-		Crawlerino::RoomDescriptor{2,2},
-		Crawlerino::RoomDescriptor{4,4},
-		Crawlerino::RoomDescriptor{4,4},
-		Crawlerino::RoomDescriptor{4,4},
-		Crawlerino::RoomDescriptor{10,10}
-	};
-	
 private:
 	UTexture2D* _DungeonTexture;
     FUpdateTextureRegion2D* _DungeonTextureRegion; // Update Region Struct
@@ -72,28 +58,6 @@ private:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { return TStatId(); }
 	// FTickableGameObject implementation End
-
-public: // Grid management
-	UFUNCTION(BlueprintPure)
-	FDungeonPos GetSize() const { return FDungeonPos{_DungeonGrid->Width(), _DungeonGrid->Height()}; }
-
-	UFUNCTION(BlueprintPure)
-	FDungeonPos GetStartPos() const { return _DungeonGrid->StartPos(); }
-	
-	UFUNCTION(BlueprintPure)
-	FDungeonPos GetRandomWalkablePos() const
-	{
-		FDungeonPos Result{};
-		do
-		{
-			Result.X = FMath::RandRange(0, _DungeonGrid->Width() - 1);
-			Result.Y = FMath::RandRange(0, _DungeonGrid->Height() - 1);
-		} while (!_DungeonGrid->CanMoveTo(Result.X, Result.Y));
-
-		return Result;
-	}
-	
-	Crawlerino::DungeonGrid& GetDungeonGrid() const { return *_DungeonGrid; }
 public: // Monster management
 	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
 	AMonsterPawn* SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos);
@@ -101,11 +65,11 @@ public: // Monster management
 	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
 	AMonsterPawn* GetMonsterPawn(const FDungeonPos& Pos) const;
 public: // Texture management 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	UTexture2D* GetRoomTexture() const { return _DungeonTexture; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetPlayerPosition(int X, int Y);
+	void SetPlayerPosition(const FDungeonPos& Pos);
 private:
 	void InitTexture();
 	//Update Texture Object from Texture Data

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CrawlerDungeonSubsystem.h"
+#include "UE/CrawlerGameState.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "CrawlerTerrainGenerator.generated.h"
@@ -17,7 +17,7 @@ class CRAWLERINO_API ACrawlerTerrainGenerator : public AActor
 	GENERATED_BODY()
 
 public:
-	UCrawlerDungeonSubsystem* _Dungeon;
+	ACrawlerGameState* _GameState;
 	
 	UProceduralMeshComponent* _Mesh;
 public:

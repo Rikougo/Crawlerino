@@ -7,16 +7,11 @@
 #include "IntVectorTypes.h"
 #include "RHICommandList.h"
 #include "Rendering/Texture2DResource.h"
+#include "UE/CrawlerGameState.h"
 
 void UCrawlerDungeonSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	
-	_DungeonGrid = std::make_unique<Crawlerino::DungeonGrid>(32, 32);
-
-	UE_LOG(LogTemp, Warning, TEXT("UCrawlerDungeonSubsystem : CREATING DUNGEON LAYOUT"));
-
-	Crawlerino::DungeonGrid::GenerateTerrain(*_DungeonGrid, _RoomsToPlace);
 	
 	InitTexture();
 }
@@ -30,7 +25,7 @@ void UCrawlerDungeonSubsystem::Tick(float DeltaTime)
 
 AMonsterPawn* UCrawlerDungeonSubsystem::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos)
 {
-	FVector SpawnLocation = FVector{Pos.X * 100.0f, Pos.Y * 100.0f, 50.0f};
+	FVector SpawnLocation = FVector{Pos.X * 100.0f, Pos.Y * 100.0f, 0.1f};
 	AMonsterPawn* MonsterInstance = GetWorld()->SpawnActor<AMonsterPawn>(Pawn, FTransform(SpawnLocation));
 
 	_Monsters.push_back(MonsterInstance);
@@ -51,20 +46,22 @@ AMonsterPawn* UCrawlerDungeonSubsystem::GetMonsterPawn(const FDungeonPos& Pos) c
 	return nullptr;
 }
 
-void UCrawlerDungeonSubsystem::SetPlayerPosition(int X, int Y)
+void UCrawlerDungeonSubsystem::SetPlayerPosition(const FDungeonPos& Pos)
 {
-	check(X >= 0 && X < _DungeonGrid->Width() && Y >= 0 && Y < _DungeonGrid->Height());
+	Crawlerino::DungeonGrid& Grid = GetWorld()->GetGameState<ACrawlerGameState>()->GetDungeonGrid(); 
+	
+	check(Pos.X >= 0 && Pos.X < Grid.Width() && Pos.Y >= 0 && Pos.Y < Grid.Height());
 
-	for (int yIdx = 0; yIdx < _DungeonGrid->Height(); yIdx++)
+	for (int yIdx = 0; yIdx < Grid.Height(); yIdx++)
 	{
-		for (int xIdx = 0; xIdx < _DungeonGrid->Width(); xIdx++)
+		for (int xIdx = 0; xIdx < Grid.Width(); xIdx++)
 		{
-			int i = yIdx * _DungeonGrid->Width() + xIdx;
+			int i = yIdx * Grid.Width() + xIdx;
 
-			int value = _DungeonGrid->GetValue(xIdx, yIdx);
+			int value = Grid.GetValue(xIdx, yIdx);
 
 			// Set pixel to red
-			if (X == xIdx && Y == yIdx)
+			if (Pos.X == xIdx && Pos.Y == yIdx)
 			{
 				_TextureData[i * 4 + 0] = 0;
 				_TextureData[i * 4 + 1] = 0;
@@ -85,17 +82,19 @@ void UCrawlerDungeonSubsystem::SetPlayerPosition(int X, int Y)
 
 void UCrawlerDungeonSubsystem::InitTexture()
 {
-	_TextureTotalPixels = _DungeonGrid->Width() * _DungeonGrid->Height();
-	_TextureDataSize = _DungeonGrid->Width() * _DungeonGrid->Height() * 4; // Pixels times the data contained by each pixel
-	_TextureDataSqrtSize = _DungeonGrid->Width()  * 4;
+	Crawlerino::DungeonGrid& Grid = GetWorld()->GetGameState<ACrawlerGameState>()->GetDungeonGrid(); 
+	
+	_TextureTotalPixels = Grid.Width() * Grid.Height();
+	_TextureDataSize = Grid.Width() * Grid.Height() * 4; // Pixels times the data contained by each pixel
+	_TextureDataSqrtSize = Grid.Width()  * 4;
 	
 	_TextureData = new uint8[_TextureDataSize];
 
 	// Init texture data
-	for (int i = 0; i < (_DungeonGrid->Width() * _DungeonGrid->Height() * 4); i+=4)
+	for (int i = 0; i < (Grid.Width() * Grid.Height() * 4); i+=4)
 	{
 		int GridIdx = i / 4;
-		int TileValue = _DungeonGrid->GetValue(GridIdx % _DungeonGrid->Width(), GridIdx / _DungeonGrid->Width());
+		int TileValue = Grid.GetValue(GridIdx % Grid.Width(), GridIdx / Grid.Width());
 
 		Color Color = RoomColors[TileValue-1];
 		
@@ -107,14 +106,14 @@ void UCrawlerDungeonSubsystem::InitTexture()
 
 	TConstArrayView64<uint8> View = TArrayView<uint8>(_TextureData, _TextureDataSize);
 	
-	_DungeonTexture = UTexture2D::CreateTransient(_DungeonGrid->Width(), _DungeonGrid->Height(), PF_B8G8R8A8, TEXT("Grid"), View);
+	_DungeonTexture = UTexture2D::CreateTransient(Grid.Width(), Grid.Height(), PF_B8G8R8A8, TEXT("Grid"), View);
 	_DungeonTexture->CompressionSettings = TextureCompressionSettings::TC_VectorDisplacementmap;
 	_DungeonTexture->SRGB = 0;
 	_DungeonTexture->Filter = TextureFilter::TF_Nearest;
 	_DungeonTexture->AddToRoot();
 	_DungeonTexture->UpdateResource();
 
-	_DungeonTextureRegion = new FUpdateTextureRegion2D(0, 0, 0, 0, _DungeonGrid->Width(), _DungeonGrid->Height());
+	_DungeonTextureRegion = new FUpdateTextureRegion2D(0, 0, 0, 0, Grid.Width(), Grid.Height());
 }
 
 void UCrawlerDungeonSubsystem::UpdateTexture(bool bFreeData) const

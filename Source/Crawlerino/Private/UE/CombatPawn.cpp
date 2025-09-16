@@ -107,7 +107,7 @@ void ACombatPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	_DungeonSubsystem = GetWorld()->GetSubsystem<UCrawlerDungeonSubsystem>();
+	_GameState = GetWorld()->GetGameState<ACrawlerGameState>();
 }
 
 // Called every frame
@@ -145,13 +145,13 @@ void ACombatPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
-void ACombatPawn::InitAtRoom(int PosX, int PosY, Direction Direction, FVector CameraStartPos, FRotator CameraStartRot)
+void ACombatPawn::InitAtRoom(const FDungeonPos& Pos, Direction Direction, FVector CameraStartPos, FRotator CameraStartRot)
 {
-	Crawlerino::DungeonGrid& Grid = _DungeonSubsystem->GetDungeonGrid();
+	Crawlerino::DungeonGrid& Grid = _GameState->GetDungeonGrid();
 
 	Crawlerino::RoomInfo RoomInfo;
 	std::vector<FDungeonPos> TilePositions{};
-	if (!Grid.GrabRoomInfo({PosX, PosY}, RoomInfo, TilePositions, 4)) return;
+	if (!Grid.GrabRoomInfo({Pos.X, Pos.Y}, RoomInfo, TilePositions, 4)) return;
 
 	/*for (auto TilePos : TilePositions)
 	{

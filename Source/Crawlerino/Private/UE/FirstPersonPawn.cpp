@@ -19,9 +19,9 @@ void AFirstPersonPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	_Dungeon = GetWorld()->GetSubsystem<UCrawlerDungeonSubsystem>();
+	_GameState = GetWorld()->GetGameState<ACrawlerGameState>();
 
-	_TerrainPos = _Dungeon->GetStartPos();
+	_TerrainPos = _GameState->GetDungeonGrid().StartPos();
 	SetActorLocation(FVector{
 		(double)_TerrainPos.X * _PawnMovementDelta, (double)_TerrainPos.Y * _PawnMovementDelta, GetActorLocation().Z
 	});
@@ -31,61 +31,39 @@ void AFirstPersonPawn::BeginPlay()
 	_PlayerController->SetShowMouseCursor(true);
 }
 
-void AFirstPersonPawn::AnimateMove(float Progress)
+void AFirstPersonPawn::PossessedBy(AController* NewController)
 {
-	FVector ActorLoc = GetActorLocation();
-
-	FVector NewLocation = FVector{
-		ActorLoc.X + ((_TargetPosition.X - ActorLoc.X) * Progress),
-		ActorLoc.Y + ((_TargetPosition.Y - ActorLoc.Y) * Progress),
-		ActorLoc.Z
-	};
-	SetActorLocation(NewLocation);
+	Super::PossessedBy(NewController);
 }
 
-void AFirstPersonPawn::AnimateLook(float Progress)
+void AFirstPersonPawn::UnPossessed()
 {
-	FQuat ActorRot = FQuat::Slerp(GetActorRotation().Quaternion(), _TargetRotation.Quaternion(), Progress);
-	SetActorRotation(ActorRot);
+	Super::UnPossessed();
+
+	if (_IsWalking) this->FinalizeAnimation(ActionType::Moving);
+	if (_IsRotating) this->FinalizeAnimation(ActionType::Look);
 }
 
-void AFirstPersonPawn::FinalizeAnimation(ActionType Action)
+void AFirstPersonPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	switch (Action)
-	{
-	case Moving:
-		FVector FinalLoc = FVector{_TargetPosition.X, _TargetPosition.Y, GetActorLocation().Z};
-		SetActorLocation(FinalLoc);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
-		_IsWalking = false;
-		break;
-	case Look:
-		SetActorRotation(_TargetRotation);
+	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFirstPersonPawn::MoveCharacter);
+	// Rigid look left/right input
+	Input->BindAction(LookLeftAction, ETriggerEvent::Started, this, &AFirstPersonPawn::LookLeftCharacter);
+	Input->BindAction(LookRightAction, ETriggerEvent::Started, this, &AFirstPersonPawn::LookRightCharacter);
 
-		_IsRotating = false;
+	// Mouse free look input
+	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Started, this, &AFirstPersonPawn::FreeLookButtonInput);
+	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Completed, this, &AFirstPersonPawn::FreeLookButtonInput);
 
-		OnRotationChanged.Broadcast(_Facing);
-		break;
-	default:
-		break;
-	}
-}
-
-void AFirstPersonPawn::StartActionAnimation(ActionType Type)
-{
-	switch (Type)
-	{
-	case Moving:
-		_IsWalking = true;
-		_WalkingStart = GetWorld()->GetTimeSeconds();
-		break;
-	case Look:
-		_IsRotating = true;
-		_RotatingStart = GetWorld()->GetTimeSeconds();
-		break;
-	default:
-		break;
-	}
+	_PlayerController = Cast<APlayerController>(GetController());
+	
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		_PlayerController->GetLocalPlayer());
+	Subsystem->ClearAllMappings();
+	Subsystem->AddMappingContext(InputMapping, 0);
 }
 
 // Called every frame
@@ -144,27 +122,61 @@ void AFirstPersonPawn::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
-void AFirstPersonPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AFirstPersonPawn::StartActionAnimation(ActionType Type)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	switch (Type)
+	{
+	case Moving:
+		_IsWalking = true;
+		_WalkingStart = GetWorld()->GetTimeSeconds();
+		break;
+	case Look:
+		_IsRotating = true;
+		_RotatingStart = GetWorld()->GetTimeSeconds();
+		break;
+	default:
+		break;
+	}
+}
 
-	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFirstPersonPawn::MoveCharacter);
-	// Rigid look left/right input
-	Input->BindAction(LookLeftAction, ETriggerEvent::Started, this, &AFirstPersonPawn::LookLeftCharacter);
-	Input->BindAction(LookRightAction, ETriggerEvent::Started, this, &AFirstPersonPawn::LookRightCharacter);
+void AFirstPersonPawn::AnimateMove(float Progress)
+{
+	FVector ActorLoc = GetActorLocation();
 
-	// Mouse free look input
-	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Started, this, &AFirstPersonPawn::FreeLookButtonInput);
-	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Completed, this, &AFirstPersonPawn::FreeLookButtonInput);
+	FVector NewLocation = FVector{
+		ActorLoc.X + ((_TargetPosition.X - ActorLoc.X) * Progress),
+		ActorLoc.Y + ((_TargetPosition.Y - ActorLoc.Y) * Progress),
+		ActorLoc.Z
+	};
+	SetActorLocation(NewLocation);
+}
 
-	_PlayerController = Cast<APlayerController>(GetController());
-	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-		_PlayerController->GetLocalPlayer());
-	Subsystem->ClearAllMappings();
-	Subsystem->AddMappingContext(InputMapping, 0);
+void AFirstPersonPawn::AnimateLook(float Progress)
+{
+	FQuat ActorRot = FQuat::Slerp(GetActorRotation().Quaternion(), _TargetRotation.Quaternion(), Progress);
+	SetActorRotation(ActorRot);
+}
+
+void AFirstPersonPawn::FinalizeAnimation(ActionType Action)
+{
+	switch (Action)
+	{
+	case Moving:
+		FVector FinalLoc = FVector{_TargetPosition.X, _TargetPosition.Y, GetActorLocation().Z};
+		SetActorLocation(FinalLoc);
+
+		_IsWalking = false;
+		break;
+	case Look:
+		SetActorRotation(_TargetRotation);
+
+		_IsRotating = false;
+
+		OnRotationChanged.Broadcast(_Facing);
+		break;
+	default:
+		break;
+	}
 }
 
 FFirstPersonPawnConfig AFirstPersonPawn::GetConfiguration() const
@@ -187,7 +199,7 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 	// Modify input depending on current direction of the player
 	switch (_Facing)
 	{
-		float tmp;
+	float tmp;
 	case Direction::North:
 		break;
 	case Direction::East:
@@ -212,7 +224,7 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 		                       ? FDungeonPos(_TerrainPos.X + Sign, _TerrainPos.Y)
 		                       : FDungeonPos(_TerrainPos.X, _TerrainPos.Y + Sign);
 
-	if (_Dungeon->GetDungeonGrid().CanMoveTo(TargetPos.X, TargetPos.Y))
+	if (_GameState->GetDungeonGrid().CanMoveTo(TargetPos.X, TargetPos.Y))
 	{
 		if (IsXInput)
 		{

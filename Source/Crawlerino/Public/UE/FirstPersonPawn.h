@@ -68,18 +68,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
 	UInputAction* FreeLookAction;
 public:
-	// Function signature
 	UPROPERTY(BlueprintAssignable)
 	FOnRotationChangedSignature OnRotationChanged;
 public:
 	// Sets default values for this pawn's properties
 	AFirstPersonPawn();
-	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
+protected:
+	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintPure)
 	FFirstPersonPawnConfig GetConfiguration() const;
@@ -88,38 +89,27 @@ public:
 	void SetConfiguration(const FFirstPersonPawnConfig& NewConfig);
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	void AnimateMove(float Progress);
-	void AnimateLook(float Progress);
-	void FinalizeAnimation(ActionType Action);
-	
 	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
 	int GetDungeonPosX() const { return _TerrainPos.X; } 
-
 	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
 	int GetDungeonPosY() const { return _TerrainPos.Y; }
-
 	UFUNCTION(BlueprintPure)
 	FDungeonPos GetPos() const { return _TerrainPos; }
-
 	UFUNCTION(BlueprintPure)
-	int GetCurrentRoom() const { return _Dungeon->GetDungeonGrid().GetRoomIndex(_TerrainPos);};
-
+	int GetCurrentRoom() const { return _GameState->GetDungeonGrid().GetRoomIndex(_TerrainPos);};
 	UFUNCTION(BlueprintPure)
 	bool IsMoving() const { return _IsWalking; }
-
 	UFUNCTION(BlueprintPure)
 	bool IsRotating() const { return _IsRotating; }
-
 	UFUNCTION(BlueprintPure)
 	bool IsLooking() const { return _IsLookingAround; }
-
 	UFUNCTION(BlueprintPure)
 	Direction GetFacingDirection() const { return _Facing; }
 private:
 	void StartActionAnimation(ActionType Type);
+	void AnimateMove(float Progress);
+	void AnimateLook(float Progress);
+	void FinalizeAnimation(ActionType Action);
 	
 	void MoveCharacter(const FInputActionInstance& Instance);
 	void LookLeftCharacter(const FInputActionInstance& Instance);
@@ -135,7 +125,7 @@ private:
 	};
 	
 	// References
-	UCrawlerDungeonSubsystem* _Dungeon;
+	ACrawlerGameState* _GameState;
 	APlayerController* _PlayerController;
 
 	// Positional data

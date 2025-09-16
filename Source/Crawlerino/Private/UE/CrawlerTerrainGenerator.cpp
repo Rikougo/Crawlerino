@@ -3,6 +3,7 @@
 
 #include "UE/CrawlerTerrainGenerator.h"
 
+
 // Sets default values
 ACrawlerTerrainGenerator::ACrawlerTerrainGenerator()
 {
@@ -18,7 +19,7 @@ void ACrawlerTerrainGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	_Dungeon = GetWorld()->GetSubsystem<UCrawlerDungeonSubsystem>();
+	_GameState = GetWorld()->GetGameState<ACrawlerGameState>();
 
 	GenerateTerrain();
 }
@@ -29,13 +30,15 @@ void ACrawlerTerrainGenerator::GenerateTerrain() const
 	TArray<FVector> Normals;
 	TArray<int32> Triangles;
 	TArray<FVector2D> UVs;
+
+	UE_LOG(LogTemp, Display, TEXT("Create terrain of size %d %d"), _GameState->GetDungeonGrid().Width(), _GameState->GetDungeonGrid().Height());
 	
 	// Create ground mesh
-	for (int yIdx = 0; yIdx < _Dungeon->GetDungeonGrid().Height(); yIdx++)
+	for (int yIdx = 0; yIdx < _GameState->GetDungeonGrid().Height(); yIdx++)
 	{
-		for (int xIdx = 0; xIdx < _Dungeon->GetDungeonGrid().Width(); xIdx++)
+		for (int xIdx = 0; xIdx < _GameState->GetDungeonGrid().Width(); xIdx++)
 		{
-			int IsActive = _Dungeon->GetDungeonGrid().GetValue(xIdx, yIdx);
+			int IsActive = _GameState->GetDungeonGrid().GetValue(xIdx, yIdx);
 			if (IsActive > 0)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Create terrain %s %s"), *FString::FromInt(yIdx), *FString::FromInt(xIdx));
@@ -111,8 +114,8 @@ void ACrawlerTerrainGenerator::TryGenerateWall(TArray<FVector>& Vertices,
 		break;
 	}
 
-	bool IsValidCoords = _Dungeon->GetDungeonGrid().IsValidPosition(FDungeonPos{nX, nY});
-	float Value = IsValidCoords ? _Dungeon->GetDungeonGrid().GetValue(nX, nY) : 0.0f;
+	bool IsValidCoords = _GameState->GetDungeonGrid().IsValidPosition(FDungeonPos{nX, nY});
+	float Value = IsValidCoords ? _GameState->GetDungeonGrid().GetValue(nX, nY) : 0.0f;
 
 	FVector OriginCenter = FVector(X * CellSize, Y * CellSize, 0.0f);
 

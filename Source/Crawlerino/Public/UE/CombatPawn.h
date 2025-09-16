@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CrawlerDungeonSubsystem.h"
+#include "CrawlerGameState.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"
 #include "CombatPawn.generated.h"
@@ -39,12 +40,12 @@ private:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual void InitAtRoom(int PosX, int PosY, Direction Direction, FVector CameraStartPos, FRotator CameraStartRot);
+	virtual void InitAtRoom(const FDungeonPos& Pos, Direction Direction, FVector CameraStartPos, FRotator CameraStartRot);
 private:
 	void StartTransition(const FVector& StartPos, const FRotator& StartRot, const FVector& TargetPos, const FRotator& TargetRot);
 	void EndTransition();
 private:
-	UCrawlerDungeonSubsystem* _DungeonSubsystem;
+	ACrawlerGameState* _GameState;
 
 	bool _IsAnimating{};
 	double _AnimationTime{};

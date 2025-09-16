@@ -28,6 +28,6 @@ protected:
 public:	
 	FDungeonPos GetPos() const { return _TerrainPos; }
 private:
-	UCrawlerDungeonSubsystem* _Dungeon;
+	// UCrawlerDungeonSubsystem* _Dungeon;
 	FDungeonPos _TerrainPos;
 };
