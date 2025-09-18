@@ -29,8 +29,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	FDungeonPos DungeonSize{32,32};
 protected:
-	ACrawlerGameState();
+	ACrawlerGameState() = default;
 protected:
+	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:

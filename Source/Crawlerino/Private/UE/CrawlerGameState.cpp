@@ -3,10 +3,11 @@
 
 #include "UE/CrawlerGameState.h"
 
-ACrawlerGameState::ACrawlerGameState()
+void ACrawlerGameState::OnConstruction(const FTransform& Transform)
 {
-	_DungeonGrid = std::make_unique<Crawlerino::DungeonGrid>(DungeonSize.X, DungeonSize.Y);
+	Super::OnConstruction(Transform);
 
+	_DungeonGrid = std::make_unique<Crawlerino::DungeonGrid>(DungeonSize.X, DungeonSize.Y);
 	Crawlerino::DungeonGrid::GenerateTerrain(*_DungeonGrid, _RoomsToPlace);
 }
 
@@ -54,7 +55,6 @@ AMonsterPawn* ACrawlerGameState::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, co
 {
 	UWorld* World = GetWorld();
 	if (!World) return nullptr;
-
 	
 	UE_LOG(LogTemp, Log, TEXT("Spawn monster at : (%d;%d)"), Pos.X, Pos.Y);
 	FVector SpawnLocation = FVector{Pos.X * 100.0f, Pos.Y * 100.0f, 0.1f};
@@ -65,7 +65,6 @@ AMonsterPawn* ACrawlerGameState::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, co
 		MonsterInstance->InitializeAtPos(Pos);
 		_Monsters.push_back(MonsterInstance);
 	}
-
-
+	
 	return MonsterInstance;
 }
