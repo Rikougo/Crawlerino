@@ -237,11 +237,11 @@ void DungeonGrid::SetStartPos(FDungeonPos StartPos)
 	_StartPos = StartPos;
 }
 
-bool DungeonGrid::CanMoveTo(int X, int Y) const
+bool DungeonGrid::IsWalkable(const FDungeonPos& Pos) const
 {
-	if (X >= 0 && X < _Width && Y >= 0 && Y < _Height)
+	if (Pos.X >= 0 && Pos.X < _Width && Pos.Y >= 0 && Pos.Y < _Height)
 	{
-		return _Data[Y * _Width + X].Value > 0;
+		return _Data[Pos.Y * _Width + Pos.X].Value > 0;
 	}
 
 	return false;

@@ -224,7 +224,7 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 		                       ? FDungeonPos(_TerrainPos.X + Sign, _TerrainPos.Y)
 		                       : FDungeonPos(_TerrainPos.X, _TerrainPos.Y + Sign);
 
-	if (_GameState->GetDungeonGrid().CanMoveTo(TargetPos.X, TargetPos.Y))
+	if (_GameState->IsWalkable(TargetPos))
 	{
 		if (IsXInput)
 		{

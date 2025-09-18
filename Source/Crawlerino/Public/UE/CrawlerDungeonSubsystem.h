@@ -41,15 +41,12 @@ private:
 	UTexture2D* _DungeonTexture;
     FUpdateTextureRegion2D* _DungeonTextureRegion; // Update Region Struct
 	
-
 	uint8* _TextureData; //Array that contains the Pixel Values for the Texture
     uint32 _TextureDataSize; // Total Bytes of Texture Data
     uint32 _TextureDataSqrtSize; // Texture Data Sqrt Size
     uint32 _TextureTotalPixels; // Total Count of Pixels in Texture
-
-	std::vector<AMonsterPawn*> _Monsters;
 private:
-
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	// FTickableGameObject implementation Begin
@@ -58,12 +55,6 @@ private:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { return TStatId(); }
 	// FTickableGameObject implementation End
-public: // Monster management
-	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
-	AMonsterPawn* SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos);
-
-	UFUNCTION(BlueprintCallable, Category = "DungeonSubsystem")
-	AMonsterPawn* GetMonsterPawn(const FDungeonPos& Pos) const;
 public: // Texture management 
 	UFUNCTION(BlueprintPure)
 	UTexture2D* GetRoomTexture() const { return _DungeonTexture; }

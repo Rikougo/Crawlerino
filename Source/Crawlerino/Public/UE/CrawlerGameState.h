@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/DungeonGrid.h"
+#include "UE/MonsterPawn.h"
 #include "GameFramework/GameStateBase.h"
 #include "CrawlerGameState.generated.h"
 
@@ -34,20 +35,17 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:
 	UFUNCTION(BlueprintPure)
-	FDungeonPos GetRandomWalkablePos() const
-	{
-		FDungeonPos Result{};
-		do
-		{
-			Result.X = FMath::RandRange(0, _DungeonGrid->Width() - 1);
-			Result.Y = FMath::RandRange(0, _DungeonGrid->Height() - 1);
-		} while (!_DungeonGrid->CanMoveTo(Result.X, Result.Y));
-
-		return Result;
-	}
+	bool IsWalkable(const FDungeonPos& Pos) const;
+	
+	UFUNCTION(BlueprintPure)
+	FDungeonPos GetRandomWalkablePos() const;
 public:
 	Crawlerino::DungeonGrid& GetDungeonGrid() const { return *_DungeonGrid; }
-	
+
+	UFUNCTION(BlueprintCallable, Category = "CrawlerGameMode")
+	AMonsterPawn* SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos);
 private:
 	std::unique_ptr<Crawlerino::DungeonGrid> _DungeonGrid;
+	
+	std::vector<AMonsterPawn*> _Monsters;
 };

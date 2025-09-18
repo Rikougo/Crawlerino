@@ -125,7 +125,7 @@ namespace Crawlerino
 		bool IsValidPosition(FDungeonPos Pos) const { return Pos.X >= 0 && Pos.X < _Width && Pos.Y >= 0 && Pos.Y < _Height; }
 		FDungeonPos StartPos() const { return _StartPos; }
 		int GetValue(int X, int Y) const;
-		bool CanMoveTo(int X, int Y) const;
+		bool IsWalkable(const FDungeonPos& Pos) const;
 
 		int GetRoomIndex(FDungeonPos Pos) const;
 		bool GrabRoomInfo(FDungeonPos Pos, RoomInfo& RoomInfo, std::vector<FDungeonPos>& TilePositions, int Radius) const;

@@ -9,6 +9,11 @@
 #include "Rendering/Texture2DResource.h"
 #include "UE/CrawlerGameState.h"
 
+void UCrawlerDungeonSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+}
+
 void UCrawlerDungeonSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
@@ -21,29 +26,6 @@ void UCrawlerDungeonSubsystem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	UpdateTexture();
-}
-
-AMonsterPawn* UCrawlerDungeonSubsystem::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos)
-{
-	FVector SpawnLocation = FVector{Pos.X * 100.0f, Pos.Y * 100.0f, 0.1f};
-	AMonsterPawn* MonsterInstance = GetWorld()->SpawnActor<AMonsterPawn>(Pawn, FTransform(SpawnLocation));
-
-	_Monsters.push_back(MonsterInstance);
-
-	return MonsterInstance;
-}
-
-AMonsterPawn* UCrawlerDungeonSubsystem::GetMonsterPawn(const FDungeonPos& Pos) const
-{
-	for (AMonsterPawn* Monster : _Monsters)
-	{
-		if (Monster->GetPos() == Pos)
-		{
-			return Monster;
-		}
-	}
-
-	return nullptr;
 }
 
 void UCrawlerDungeonSubsystem::SetPlayerPosition(const FDungeonPos& Pos)

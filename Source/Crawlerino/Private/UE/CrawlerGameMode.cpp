@@ -9,3 +9,5 @@ void ACrawlerGameMode::InitGame(const FString& MapName, const FString& Options, 
 
 	UE_LOG(LogTemp, Log, TEXT("Initializing game (loading level %s)"), *MapName);
 }
+
+
