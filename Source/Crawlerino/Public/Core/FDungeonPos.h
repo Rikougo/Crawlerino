@@ -18,9 +18,9 @@ struct FDungeonPos
 	
 	FDungeonPos(int32 x, int32 y) : X(x), Y(y) {}
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 X{0};
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Y{0};
 
 
