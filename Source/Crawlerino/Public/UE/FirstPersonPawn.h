@@ -88,11 +88,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetConfiguration(const FFirstPersonPawnConfig& NewConfig);
 
-protected:
-	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
-	int GetDungeonPosX() const { return _TerrainPos.X; } 
-	UFUNCTION(BlueprintPure, meta=(DeprecatedFunction, DeprecationMessage="Use GetPos() instead"))
-	int GetDungeonPosY() const { return _TerrainPos.Y; }
+public:
 	UFUNCTION(BlueprintPure)
 	FDungeonPos GetPos() const { return _TerrainPos; }
 	UFUNCTION(BlueprintPure)

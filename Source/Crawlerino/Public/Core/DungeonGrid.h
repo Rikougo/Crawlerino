@@ -14,66 +14,68 @@ UENUM(BlueprintType)
 enum Direction : uint8
 {
 	North = 0,
-	East  = 1,
+	West  = 1,
 	South = 2,
-	West  = 3
+	East  = 3
 };
 
-inline float EaseOutCubic(float x)
-{
-	return 1 - pow(1 - x, 3);
-}
-
-inline float EaseOutCirc(float x) {
-	return sqrt(1 - pow(x - 1, 2));
-}
-
-inline float EaseInOutCirc(float x)
-{
-	return x < 0.5
-		       ? (1 - sqrt(1 - pow(2 * x, 2))) / 2
-		       : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
-}
-
-inline float ClampAngle(float RawAngle)
-{
-	float Angle = static_cast<int>(RawAngle) % 360;
-	if (Angle < 0) { Angle += 360.0f; }
-	return Angle;
-}
-
-inline Direction DirFromAngle(float Angle)
-{
-	if (Angle > 315.0f || Angle < 45.0f)
-	{
-		return Direction::North;
-	} else if (Angle > 45.0f && Angle < 135.0f)
-	{
-		return Direction::East;
-	} else if (Angle > 135.0f && Angle < 225.0f)
-	{
-		return Direction::South;
-	} else /*(Angle > 225.0f && Angle < 315.0f)*/
-	{
-		return Direction::West;
-	}
-}
 
 /**
  * 
  */
 namespace Crawlerino
 {
+	namespace Utils
+	{
+		inline float EaseOutCubic(float x)
+		{
+			return 1 - pow(1 - x, 3);
+		}
 
+		inline float EaseOutCirc(float x) {
+			return sqrt(1 - pow(x - 1, 2));
+		}
 
+		inline float EaseInOutCirc(float x)
+		{
+			return x < 0.5
+				       ? (1 - sqrt(1 - pow(2 * x, 2))) / 2
+				       : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
+		}
+
+		inline float ClampAngle(float RawAngle)
+		{
+			float Angle = static_cast<int>(RawAngle) % 360;
+			if (Angle < 0) { Angle += 360.0f; }
+			return Angle;
+		}
+
+		inline Direction DirFromAngle(float Angle)
+		{
+			if (Angle > 315.0f || Angle < 45.0f)
+			{
+				return Direction::North;
+			} else if (Angle > 45.0f && Angle < 135.0f)
+			{
+				return Direction::East;
+			} else if (Angle > 135.0f && Angle < 225.0f)
+			{
+				return Direction::South;
+			} else /*(Angle > 225.0f && Angle < 315.0f)*/
+			{
+				return Direction::West;
+			}
+		}
+	}
+	
 	inline float GetYawFromDirection(Direction direction)
 	{
 		switch (direction)
 		{
 			case Direction::North: return   0.0f;
-			case Direction::East:  return  90.0f;
+			case Direction::West:  return  90.0f;
 			case Direction::South: return 180.0f;
-			case Direction::West:  return 270.0f;
+			case Direction::East:  return 270.0f;
 			default: return 0;
 		}
 	}

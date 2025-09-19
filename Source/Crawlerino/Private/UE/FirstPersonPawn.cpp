@@ -77,7 +77,7 @@ void AFirstPersonPawn::Tick(float DeltaTime)
 	{
 		float AnimTime = Time - _WalkingStart;
 		float AnimProgress = AnimTime / _Config.AnimTime;
-		float EasedProgress = EaseInOutCirc(AnimProgress);
+		float EasedProgress = Crawlerino::Utils::EaseInOutCirc(AnimProgress);
 
 		AnimateMove(EasedProgress);
 
@@ -91,7 +91,7 @@ void AFirstPersonPawn::Tick(float DeltaTime)
 	{
 		float AnimTime = Time - _RotatingStart;
 		float AnimProgress = AnimTime / _Config.AnimTime;
-		float EasedProgress = EaseInOutCirc(AnimProgress);
+		float EasedProgress = Crawlerino::Utils::EaseInOutCirc(AnimProgress);
 
 		AnimateLook(EasedProgress);
 
@@ -117,8 +117,8 @@ void AFirstPersonPawn::Tick(float DeltaTime)
 		if (Rotator.Yaw < 0.0f) Rotator.Yaw += 360.0f;
 		SetActorRotation(Rotator);
 
-		float DirAngle = ClampAngle(Rotator.Yaw);
-		_Facing = DirFromAngle(DirAngle);
+		float DirAngle = Crawlerino::Utils::ClampAngle(Rotator.Yaw);
+		_Facing = Crawlerino::Utils::DirFromAngle(DirAngle);
 	}
 }
 
@@ -202,7 +202,7 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 	float tmp;
 	case Direction::North:
 		break;
-	case Direction::East:
+	case Direction::West:
 		tmp = InputDir.Y;
 		InputDir.Y = InputDir.X;
 		InputDir.X = -tmp;
@@ -211,7 +211,7 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 		InputDir.X *= -1;
 		InputDir.Y *= -1;
 		break;
-	case Direction::West:
+	case Direction::East:
 		tmp = InputDir.Y;
 		InputDir.Y = -InputDir.X;
 		InputDir.X = tmp;

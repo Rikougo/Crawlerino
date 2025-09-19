@@ -33,4 +33,9 @@ struct FDungeonPos
 	{
 		return FDungeonPos(X + Other.X, Y + Other.Y);
 	}
+
+	FDungeonPos operator-(const FDungeonPos& OtherPos) const
+	{
+		return FDungeonPos(X - OtherPos.X, Y - OtherPos.Y);
+	}
 };
