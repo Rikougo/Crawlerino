@@ -96,6 +96,8 @@ void UCrawlerDungeonSubsystem::InitTexture()
 	_DungeonTexture->UpdateResource();
 
 	_DungeonTextureRegion = new FUpdateTextureRegion2D(0, 0, 0, 0, Grid.Width(), Grid.Height());
+
+	OnTextureReady.Broadcast();
 }
 
 void UCrawlerDungeonSubsystem::UpdateTexture(bool bFreeData) const

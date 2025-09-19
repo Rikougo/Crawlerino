@@ -30,21 +30,19 @@ constexpr Color RoomColors[] = {
  */
 class CRAWLERINO_API AMonsterPawn;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDungeonTextureReady);
 /**
  * 
  */
 UCLASS()
 class CRAWLERINO_API UCrawlerDungeonSubsystem : public UTickableWorldSubsystem
 {
-	GENERATED_BODY()
-private:
-	UTexture2D* _DungeonTexture;
-    FUpdateTextureRegion2D* _DungeonTextureRegion; // Update Region Struct
+
 	
-	uint8* _TextureData; //Array that contains the Pixel Values for the Texture
-    uint32 _TextureDataSize; // Total Bytes of Texture Data
-    uint32 _TextureDataSqrtSize; // Texture Data Sqrt Size
-    uint32 _TextureTotalPixels; // Total Count of Pixels in Texture
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintAssignable)
+	FDungeonTextureReady OnTextureReady;
 private:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
@@ -65,4 +63,12 @@ private:
 	void InitTexture();
 	//Update Texture Object from Texture Data
     void UpdateTexture(bool bFreeData = false) const;
+private:
+	UTexture2D* _DungeonTexture;
+    FUpdateTextureRegion2D* _DungeonTextureRegion; // Update Region Struct
+	
+	uint8* _TextureData; //Array that contains the Pixel Values for the Texture
+    uint32 _TextureDataSize; // Total Bytes of Texture Data
+    uint32 _TextureDataSqrtSize; // Texture Data Sqrt Size
+    uint32 _TextureTotalPixels; // Total Count of Pixels in Texture
 };
