@@ -3,6 +3,7 @@
 
 #include "UE/CrawlerGameMode.h"
 
+
 #include "Kismet/GameplayStatics.h"
 #include "UE/FirstPersonPawn.h"
 
@@ -59,6 +60,7 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	FDungeonPos MonsterPos = Monster->GetPos();
 	FDungeonPos PlayerPos = FPPawn->GetPos();
 
+	_CombatManager = std::make_unique<CombatManager>(FStatSheet{100, 50}, FStatSheet{100, 20});
 
 	Direction PlayerToMonsterDir = Crawlerino::Utils::ComputeDirection(PlayerPos, MonsterPos);
 	UE_LOG(LogTemp, Log, TEXT("Player pos : %d %d; Monster pos : %d %d; Direction %d"), PlayerPos.X, PlayerPos.Y, MonsterPos.X, MonsterPos.Y, PlayerToMonsterDir);
@@ -70,6 +72,33 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	PlayerController->Possess(CombatPawn);
 	_Status = CrawlerStatus::Combat;
 }
+
+void ACrawlerGameMode::CastAction(APawn* Pawn)
+{
+	if (Pawn == _CombatPawn)
+	{
+		// player attack monster, if return true then turn has switched to monster, perform monster action
+		if (_CombatManager->InflictDamage(0, 1))
+		{
+			auto CombatResult = _CombatManager->GetCombatResult();
+			if (CombatResult != CombatManager::OnGoing)
+			{
+				EndCombat(CombatResult::Won);
+			}
+			
+			if (_CombatManager->InflictDamage(1, 0))
+			{
+				CombatResult = _CombatManager->GetCombatResult();
+				if (CombatResult != CombatManager::OnGoing)
+				{
+					EndCombat(CombatResult::Won);
+				}
+			}
+
+		}
+	}
+}
+
 
 void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 {

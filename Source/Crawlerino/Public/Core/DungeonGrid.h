@@ -11,7 +11,7 @@
 
 // --- CORE UTILS
 UENUM(BlueprintType)
-enum Direction : uint8
+enum  Direction : uint8
 {
 	North = 0,
 	West  = 1,
@@ -81,19 +81,19 @@ namespace Crawlerino
 	}
 
 	// --- GRID UTILS
-	struct DungeonTile
+	struct CRAWLERINO_API DungeonTile
 	{
 		int Value{-1};
 		FDungeonPos Pos{-1, -1};
 	};
 
-	struct RoomDescriptor
+	struct CRAWLERINO_API RoomDescriptor
 	{
 		int Width;
 		int Height;
 	};
 
-	struct RoomInfo
+	struct CRAWLERINO_API RoomInfo
 	{
 		int RoomIndex{-1};
 		FDungeonPos MinRoomPos{-1, -1};

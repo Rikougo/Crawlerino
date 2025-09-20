@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/GameModeBase.h"
+
+#include "Core/DungeonGrid.h"
+#include "Core/CombatManager.h"
 #include "CombatPawn.h"
 #include "FirstPersonPawn.h"
 #include "MonsterPawn.h"
-#include "Core/DungeonGrid.h"
-#include "GameFramework/GameModeBase.h"
+
 #include "CrawlerGameMode.generated.h"
 
 UENUM(BlueprintType)
@@ -47,6 +50,9 @@ public:
 	virtual void InitiateCombat(AMonsterPawn* Monster);
 
 	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
+	virtual void CastAction(APawn* Pawn); 
+
+	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
 	virtual void EndCombat(const CombatResult& Result);
 private:
 	ACombatPawn* SpawnOrGetCombatPawn();
@@ -55,6 +61,8 @@ private:
 
 	AFirstPersonPawn* _ExplorationPawn;
 	ACombatPawn* _CombatPawn;
+
+	std::unique_ptr<CombatManager> _CombatManager;
 };
 
 namespace Crawlerino

@@ -7,7 +7,7 @@
 #include "FDungeonPos.generated.h"
 
 USTRUCT(BlueprintType)
-struct FDungeonPos
+struct CRAWLERINO_API FDungeonPos
 {
 	GENERATED_USTRUCT_BODY()
 
