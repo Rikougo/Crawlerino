@@ -3,11 +3,12 @@
 #pragma once
 
 #include <vector>
-
 #include "CoreMinimal.h"
 #include "IntVectorTypes.h"
-#include "Core/DungeonGrid.h"
 #include "Subsystems/WorldSubsystem.h"
+
+#include "Terrain/DungeonGrid.h"
+
 #include "CrawlerDungeonSubsystem.generated.h"
 
 struct Color
@@ -45,6 +46,7 @@ public:
 	FDungeonTextureReady OnTextureReady;
 private:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	// FTickableGameObject implementation Begin

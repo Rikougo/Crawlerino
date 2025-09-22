@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 
-#include "Core/DungeonGrid.h"
-#include "Core/CombatManager.h"
-#include "CombatPawn.h"
-#include "FirstPersonPawn.h"
-#include "MonsterPawn.h"
+#include "Characters/CombatPawn.h"
+#include "Characters/FirstPersonPawn.h"
+#include "Characters/MonsterPawn.h"
+#include "Combat/CombatManager.h"
+#include "Combat/FStatSheet.h"
+#include "Terrain/DungeonGrid.h"
+#include "Terrain/FDungeonPos.h"
 
 #include "CrawlerGameMode.generated.h"
 

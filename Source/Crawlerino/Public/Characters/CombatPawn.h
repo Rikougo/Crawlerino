@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CrawlerDungeonSubsystem.h"
-#include "CrawlerGameState.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"
+
+#include "GameModes/CrawlerGameState.h"
+#include "UE/CrawlerDungeonSubsystem.h"
 #include "CombatPawn.generated.h"
 
 UCLASS()

@@ -3,9 +3,9 @@
 #pragma once
 
 #include <vector>
-
 #include "IntVectorTypes.h"
-#include "Core/FDungeonPos.h"
+
+#include "Terrain/FDungeonPos.h"
 
 // using FDungeonPos = UE::Geometry::FVector2i;
 

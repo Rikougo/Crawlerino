@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UE/CrawlerTerrainGenerator.h"
+#include "Terrain/CrawlerTerrainGenerator.h"
 
 
 // Sets default values

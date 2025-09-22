@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UE/CrawlerGameState.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+
+#include "GameModes/CrawlerGameState.h"
+
 #include "CrawlerTerrainGenerator.generated.h"
 
 /**

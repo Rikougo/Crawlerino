@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CrawlerTerrainGenerator.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "IntVectorTypes.h"
+
+#include "GameModes/CrawlerGameState.h"
+
 #include "FirstPersonPawn.generated.h"
 
  // Delegate signature

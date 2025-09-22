@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Core/FStatSheet.h"
+#include "Combat/FStatSheet.h"
 
 class CombatManager
 {

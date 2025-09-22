@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/DungeonGrid.h"
-#include "UE/MonsterPawn.h"
 #include "GameFramework/GameStateBase.h"
+
+#include "Characters/MonsterPawn.h"
+#include "Terrain/DungeonGrid.h"
+
 #include "CrawlerGameState.generated.h"
 
 /**

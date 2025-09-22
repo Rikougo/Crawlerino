@@ -1,10 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Core/DungeonGrid.h"
+#include "Terrain/DungeonGrid.h"
 
 #include <queue>
-#include <unordered_set>
 
 using namespace Crawlerino;
 

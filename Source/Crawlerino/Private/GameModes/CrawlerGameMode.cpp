@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UE/CrawlerGameMode.h"
+#include "GameModes/CrawlerGameMode.h"
 
 
 #include "Kismet/GameplayStatics.h"
-#include "UE/FirstPersonPawn.h"
 
 void ACrawlerGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
