@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/FirstPersonPawn.h"
+#include "Characters/Player/FirstPersonPawn.h"
 
 // Sets default values
 AFirstPersonPawn::AFirstPersonPawn()

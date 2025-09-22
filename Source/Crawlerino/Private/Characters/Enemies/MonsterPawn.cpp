@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters//MonsterPawn.h"
+#include "Characters/Enemies/MonsterPawn.h"
 
 // Sets default values
 AMonsterPawn::AMonsterPawn()

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 
-#include "Characters/MonsterPawn.h"
+#include "Characters/Enemies/MonsterPawn.h"
 #include "Terrain/DungeonGrid.h"
 
 #include "CrawlerGameState.generated.h"

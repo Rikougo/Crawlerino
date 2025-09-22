@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/CombatPawn.h"
+#include "Characters/Player//CombatPawn.h"
 
 #include "CoreMinimal.h"
 #include "Math/Vector.h"

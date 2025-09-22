@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 
-#include "Characters/CombatPawn.h"
-#include "Characters/FirstPersonPawn.h"
-#include "Characters/MonsterPawn.h"
+#include "Characters/Player/CombatPawn.h"
+#include "Characters/Player/FirstPersonPawn.h"
+#include "Characters/Enemies/MonsterPawn.h"
 #include "Combat/CombatManager.h"
 #include "Combat/FStatSheet.h"
 #include "Terrain/DungeonGrid.h"
