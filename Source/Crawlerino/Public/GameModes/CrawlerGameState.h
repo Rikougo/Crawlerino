@@ -45,8 +45,11 @@ public:
 public:
 	Crawlerino::DungeonGrid& GetDungeonGrid() const { return *_DungeonGrid; }
 
-	UFUNCTION(BlueprintCallable, Category = "CrawlerGameMode")
+	UFUNCTION(BlueprintCallable, Category = "CrawlerGameState")
 	AMonsterPawn* SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, const FDungeonPos& Pos);
+
+	UFUNCTION(BlueprintCallable, Category = "CrawlerGameState")
+	bool KillMonster(AMonsterPawn* Pawn);
 private:
 	std::unique_ptr<Crawlerino::DungeonGrid> _DungeonGrid;
 	

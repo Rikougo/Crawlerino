@@ -79,7 +79,6 @@ private:
 	ACombatPawn* _CombatPawn;
 
 	std::vector<CombatEntity> _CombatEntities;
-	AMonsterPawn* _EnemyPawn;
 	std::unique_ptr<CombatManager> _CombatManager;
 };
 

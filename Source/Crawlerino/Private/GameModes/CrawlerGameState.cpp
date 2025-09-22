@@ -69,3 +69,17 @@ AMonsterPawn* ACrawlerGameState::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, co
 	
 	return MonsterInstance;
 }
+
+bool ACrawlerGameState::KillMonster(AMonsterPawn* Pawn)
+{
+	const auto it = std::find(_Monsters.begin(), _Monsters.end(), Pawn);
+
+	if (it != _Monsters.end())
+	{
+		_Monsters.erase(it);
+		Pawn->Destroy();
+		return true;
+	}
+
+	return false;
+}

@@ -70,11 +70,10 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	CombatPawn->Init(CombatPawnLocation, CombatPawnRotator);
 
 	PlayerController->Possess(CombatPawn);
-	_EnemyPawn = Monster;
 	_CombatManager = std::make_unique<CombatManager>(FStatSheet{100, 50}, FStatSheet{100, 20});
 	
 	_CombatEntities.emplace_back(CombatEntity{CombatPawn, 0});
-	_CombatEntities.emplace_back(CombatEntity{_EnemyPawn, 1});
+	_CombatEntities.emplace_back(CombatEntity{Monster, 1});
 	
 	_Status = CrawlerStatus::Combat;
 }
@@ -148,10 +147,22 @@ void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 		return;
 	}
 
+	if (Result == CombatResult::Won)
+	{
+		for (CombatEntity CombatEntity : _CombatEntities)
+		{
+			if (auto MonsterPawn = static_cast<AMonsterPawn*>(CombatEntity.Pawn))
+			{
+				GetGameState<ACrawlerGameState>()->KillMonster(MonsterPawn);
+			}
+		} 
+	}
+
+	_CombatEntities.clear();
+
 	PlayerController->Possess(_ExplorationPawn);
-	_EnemyPawn->Destroy();
-	_EnemyPawn = nullptr;
 	_CombatPawn->Clean();
+	
 	_Status = CrawlerStatus::Exploration;
 }
 
