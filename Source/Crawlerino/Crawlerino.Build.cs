@@ -8,7 +8,7 @@ public class Crawlerino : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "ProceduralMeshComponent", "RHI", "RenderCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "ProceduralMeshComponent", "RHI", "RenderCore", "AIModule" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 		PrivateIncludePaths.AddRange(new string[] { "Crawlerino/Private" });

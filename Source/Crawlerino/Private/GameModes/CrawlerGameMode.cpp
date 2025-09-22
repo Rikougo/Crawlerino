@@ -2,9 +2,11 @@
 
 
 #include "GameModes/CrawlerGameMode.h"
-
-
 #include "Kismet/GameplayStatics.h"
+
+#include "Characters/Enemies/MonsterController.h"
+#include "Characters/Player/CrawlerPlayerController.h"
+
 
 void ACrawlerGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -59,7 +61,6 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	FDungeonPos MonsterPos = Monster->GetPos();
 	FDungeonPos PlayerPos = FPPawn->GetPos();
 
-	_CombatManager = std::make_unique<CombatManager>(FStatSheet{100, 50}, FStatSheet{100, 20});
 
 	Direction PlayerToMonsterDir = Crawlerino::Utils::ComputeDirection(PlayerPos, MonsterPos);
 	UE_LOG(LogTemp, Log, TEXT("Player pos : %d %d; Monster pos : %d %d; Direction %d"), PlayerPos.X, PlayerPos.Y, MonsterPos.X, MonsterPos.Y, PlayerToMonsterDir);
@@ -69,35 +70,67 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	CombatPawn->Init(CombatPawnLocation, CombatPawnRotator);
 
 	PlayerController->Possess(CombatPawn);
+	_EnemyPawn = Monster;
+	_CombatManager = std::make_unique<CombatManager>(FStatSheet{100, 50}, FStatSheet{100, 20});
+	
+	_CombatEntities.emplace_back(CombatEntity{CombatPawn, 0});
+	_CombatEntities.emplace_back(CombatEntity{_EnemyPawn, 1});
+	
 	_Status = CrawlerStatus::Combat;
 }
 
-void ACrawlerGameMode::CastAction(APawn* Pawn)
+void ACrawlerGameMode::CastAction(APawn* Pawn, int Target)
 {
-	if (Pawn == _CombatPawn)
+	CombatEntity Entity{nullptr, -1};
+	for (CombatEntity Value : _CombatEntities)
 	{
-		// player attack monster, if return true then turn has switched to monster, perform monster action
-		if (_CombatManager->InflictDamage(0, 1))
+		if (Value.Pawn == Pawn)
 		{
-			auto CombatResult = _CombatManager->GetCombatResult();
-			if (CombatResult != CombatManager::OnGoing)
-			{
-				EndCombat(CombatResult::Won);
-			}
-			
-			if (_CombatManager->InflictDamage(1, 0))
-			{
-				CombatResult = _CombatManager->GetCombatResult();
-				if (CombatResult != CombatManager::OnGoing)
-				{
-					EndCombat(CombatResult::Won);
-				}
-			}
+			Entity = Value;
+		}
+	}
 
+	if (Entity.Pawn == nullptr)
+	{
+		// no entity associated to pawn, doing nothing
+		return;
+	}
+
+	if (Entity.Index != _CombatManager->CurrentOwner())
+	{
+		// entity isn't turn owner, can't perform action
+		return;
+	}
+
+	if (_CombatManager->InflictDamage(Entity.Index, Target))
+	{
+		auto CombatResult = _CombatManager->GetCombatResult();
+
+		if (CombatResult != CombatManager::OnGoing)
+		{
+			auto Result = CombatResult == CombatManager::PlayerWin ? CombatResult::Won : CombatResult::Lost;
+			EndCombat(Result);
+		} else
+		{
+			CombatEntity NewOwner{};
+			if (FetchEntity(_CombatManager->CurrentOwner(), NewOwner))
+			{
+				auto Controller = NewOwner.Pawn->GetController();
+
+				if (auto MonsterController = static_cast<AMonsterController*>(Controller))
+				{
+					MonsterController->StartTurn();
+				}
+
+				if (auto PlayerController = static_cast<ACrawlerPlayerController*>(Controller))
+				{
+					PlayerController->StartTurn();
+				}
+				// TODO Call either Player or Monster controller controlling new owner's pawn
+			}
 		}
 	}
 }
-
 
 void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 {
@@ -116,6 +149,8 @@ void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 	}
 
 	PlayerController->Possess(_ExplorationPawn);
+	_EnemyPawn->Destroy();
+	_EnemyPawn = nullptr;
 	_CombatPawn->Clean();
 	_Status = CrawlerStatus::Exploration;
 }
@@ -129,6 +164,34 @@ ACombatPawn* ACrawlerGameMode::SpawnOrGetCombatPawn()
 
 	_CombatPawn = World->SpawnActor<ACombatPawn>(CombatPawnClass);
 	return _CombatPawn;
+}
+
+bool ACrawlerGameMode::FetchEntity(const APawn* Pawn, CombatEntity& Result) const
+{
+	for (CombatEntity Value : _CombatEntities)
+	{
+		if (Value.Pawn == Pawn)
+		{
+			Result = {Value};
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ACrawlerGameMode::FetchEntity(int Index, CombatEntity& Result) const
+{
+	for (CombatEntity Value : _CombatEntities)
+	{
+		if (Value.Index == Index)
+		{
+			Result = {Value};
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Direction Crawlerino::Utils::ComputeDirection(const FDungeonPos& PlayerPos, const FDungeonPos& MonsterPos)

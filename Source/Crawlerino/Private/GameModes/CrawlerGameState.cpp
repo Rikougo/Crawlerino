@@ -62,6 +62,7 @@ AMonsterPawn* ACrawlerGameState::SpawnMonster(TSubclassOf<AMonsterPawn> Pawn, co
 
 	if (MonsterInstance)
 	{
+		MonsterInstance->SpawnDefaultController();
 		MonsterInstance->InitializeAtPos(Pos);
 		_Monsters.push_back(MonsterInstance);
 	}

@@ -4,6 +4,9 @@
 
 class CombatManager
 {
+private:
+	typedef std::unique_ptr<FStatManipulator> FStatManipulatorPtr;
+	typedef std::vector<FStatManipulator> FStatManipulatorList;
 public:
 	enum CombatResult
 	{
@@ -16,14 +19,18 @@ public:
 	CombatManager() = delete;
 	CombatManager(const FStatSheet& PlayerStats, const FStatSheet& MonsterStats)
 	{
-		_PlayerStats = PlayerStats;
-		_MonsterStats = MonsterStats;
+		_EntitiesStats = {};
+		_EntitiesStats.push_back(FStatManipulator(PlayerStats, true));
+		_EntitiesStats.push_back(FStatManipulator(MonsterStats, false));
 
 		_TurnCounter = 0;
 		_TurnOwner = 0; // PLAYER START
 		_IsEnded = false;
 	}
 
+	int CurrentOwner() const { return _TurnOwner;}
+	CombatResult GetCombatResult() const { return _EndResult;}
+	
 	bool InflictDamage(int Source, int Target)
 	{
 		if (_TurnOwner != Source)
@@ -31,15 +38,10 @@ public:
 			return false; // only turn owner can perform action
 		}
 
-		FStatSheet* OwnerStats = GetOwnerStats();
-
-		FStatSheet* TargetStats = GetStats(Target);
-		if (TargetStats == nullptr)
-		{
-			return false; // error wrong target
-		}
-
-		TargetStats->InflictDamage(OwnerStats->GetDamage());
+		auto& OwnerStats = GetOwnerStats();
+		auto& TargetStats = GetStats(Target);
+		
+		TargetStats.InflictDamage(OwnerStats.GetDamage());
 
 		CheckEndCondition();
 
@@ -48,37 +50,42 @@ public:
 		return true;
 	}
 
-	CombatResult GetCombatResult() const { return _EndResult;}
 private:
-	FStatSheet* GetOwnerStats()
+	FStatManipulator& GetOwnerStats()
 	{
 		return GetStats(_TurnOwner);
 	}
-	FStatSheet* GetStats(int Index)
+	FStatManipulator& GetStats(int Index)
 	{
-		switch (_TurnOwner)
-		{
-			case 0:
-				return &_PlayerStats;
-			case 1:
-				return &_MonsterStats;
-			default:
-				return nullptr;
-		}
+		return _EntitiesStats[Index];
 	}
 
 	void CheckEndCondition()
 	{
 		if (_IsEnded) { return;}
-		
-		if (!_PlayerStats.IsAlive())
+
+		auto PlayerCheck = [](auto& Stats)
+		{
+			bool IsPlayer = Stats.IsPlayer();
+			bool IsAlive = Stats.IsAlive();
+
+			return (!IsPlayer) || (IsPlayer && IsAlive);
+		};
+		if (!std::ranges::all_of(_EntitiesStats,PlayerCheck))
 		{
 			_IsEnded = true;
 			_EndResult = MonsterWin;
 			return;
 		}
-		
-		if (!_MonsterStats.IsAlive())
+
+		auto MonsterCheck = [](auto& Stats)
+		{
+			bool IsMonter = !Stats.IsPlayer();
+			bool IsAlive = Stats.IsAlive();
+
+			return (!IsMonter) || (IsMonter && IsAlive);
+		};
+		if (!std::ranges::all_of(_EntitiesStats,MonsterCheck))
 		{
 			_IsEnded = true;
 			_EndResult = PlayerWin;
@@ -92,8 +99,7 @@ private:
 		_TurnCounter++;
 	}
 private:
-	FStatSheet _PlayerStats{0,-1};
-	FStatSheet _MonsterStats{0, -1};
+	FStatManipulatorList _EntitiesStats;
 
 	int _TurnCounter = 0;
 	int _TurnOwner = 0; // index of the one currently playing

@@ -29,6 +29,12 @@ enum class CombatResult : uint8
 	Lost
 };
 
+struct CRAWLERINO_API CombatEntity
+{
+	APawn* Pawn;
+	int Index;
+};
+
 /**
  * 
  */
@@ -45,25 +51,35 @@ protected:
 public:
 	/**
 	 * Switch player to configured CombatPawnClass instance and switch to Combat status. CrawlerGameMode manage all combat
-	 * rules such as turn and winning or losing condition
+	 * rules such as performing turn action and winning or losing condition
 	 * @param Monster Combat target
 	 */
 	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
 	virtual void InitiateCombat(AMonsterPawn* Monster);
 
+	/**
+	 * Attack given target and pass turn
+	 * @param Pawn Author of action
+	 * @param Target 
+	 */
 	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
-	virtual void CastAction(APawn* Pawn); 
+	virtual void CastAction(APawn* Pawn, int Target); 
 
 	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
 	virtual void EndCombat(const CombatResult& Result);
 private:
 	ACombatPawn* SpawnOrGetCombatPawn();
+
+	bool FetchEntity(const APawn* Pawn, CombatEntity& Result) const;
+	bool FetchEntity(int Index, CombatEntity& Result) const;
 private:
 	CrawlerStatus _Status;
 
 	AFirstPersonPawn* _ExplorationPawn;
 	ACombatPawn* _CombatPawn;
 
+	std::vector<CombatEntity> _CombatEntities;
+	AMonsterPawn* _EnemyPawn;
 	std::unique_ptr<CombatManager> _CombatManager;
 };
 
