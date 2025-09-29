@@ -3,12 +3,17 @@
 
 #include "GameModes/CrawlerGameState.h"
 
+#include "Terrain/Props/TerrainProp.h"
+
 void ACrawlerGameState::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
 	_DungeonGrid = std::make_unique<Crawlerino::DungeonGrid>(DungeonSize.X, DungeonSize.Y);
 	Crawlerino::DungeonGrid::GenerateTerrain(*_DungeonGrid, _RoomsToPlace);
+
+	_Monsters = {};
+	_TerrainProps = {};
 }
 
 void ACrawlerGameState::BeginPlay()
@@ -82,4 +87,22 @@ bool ACrawlerGameState::KillMonster(AMonsterPawn* Pawn)
 	}
 
 	return false;
+}
+
+ATerrainProp* ACrawlerGameState::SpawnTerrainProp(TSubclassOf<ATerrainProp> Prop, const FDungeonPos& Pos, const FDirection& Dir)
+{
+	UWorld* World = GetWorld();
+	if (!World) return nullptr;
+	
+	UE_LOG(LogTemp, Log, TEXT("Spawn monster at : (%d;%d)"), Pos.X, Pos.Y);
+	FVector SpawnLocation = FVector{Pos.X * 100.0f, Pos.Y * 100.0f, 0.1f};
+	ATerrainProp* PropInstance = World->SpawnActor<ATerrainProp>(Prop, FTransform(SpawnLocation));
+
+	if (PropInstance)
+	{
+		PropInstance->Initialize(this, Pos, FDirection::North);
+		_TerrainProps.push_back(PropInstance);
+	}
+
+	return PropInstance;
 }

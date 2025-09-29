@@ -5,18 +5,20 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
+#include "Components/SphereComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "IntVectorTypes.h"
 
 #include "GameModes/CrawlerGameState.h"
+#include "Terrain/Props/Interactable.h"
 
 #include "FirstPersonPawn.generated.h"
 
  // Delegate signature
 
 UDELEGATE(BlueprintAuthorityOnly)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRotationChangedSignature, Direction, NewDirection);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRotationChangedSignature, FDirection, NewDirection);
 
 class UInputMappingContext;
 
@@ -51,6 +53,9 @@ class CRAWLERINO_API AFirstPersonPawn : public APawn
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USphereComponent* SphereCollider;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* InputMapping;
@@ -69,6 +74,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
 	UInputAction* FreeLookAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
+	UInputAction* InteractAction;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnRotationChangedSignature OnRotationChanged;
@@ -89,7 +97,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void SetConfiguration(const FFirstPersonPawnConfig& NewConfig);
-
 public:
 	UFUNCTION(BlueprintPure)
 	FDungeonPos GetPos() const { return _TerrainPos; }
@@ -102,20 +109,25 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsLooking() const { return _IsLookingAround; }
 	UFUNCTION(BlueprintPure)
-	Direction GetFacingDirection() const { return _Facing; }
+	FDirection GetFacingDirection() const { return _Facing; }
 private:
 	void StartActionAnimation(ActionType Type);
 	void AnimateMove(float Progress);
 	void AnimateLook(float Progress);
 	void FinalizeAnimation(ActionType Action);
+
+	UFUNCTION()
+	void OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	void MoveCharacter(const FInputActionInstance& Instance);
 	void LookLeftCharacter(const FInputActionInstance& Instance);
 	void LookRightCharacter(const FInputActionInstance& Instance);
 	void FreeLookButtonInput(const FInputActionInstance& Instance);
+	void OnInteract(const FInputActionInstance& Instance);
 private:
 	// Config
-	float _PawnMovementDelta = 100.0f;
 	FFirstPersonPawnConfig _Config {
 		0.35f,
 		1.0f,
@@ -127,8 +139,10 @@ private:
 	APlayerController* _PlayerController;
 
 	// Positional data
-	Direction _Facing;
+	FDirection _Facing;
 	FDungeonPos _TerrainPos;
+
+	std::vector<TScriptInterface<IInteractable>> _Interactables;
 
 	// Walk animation
 	bool _IsWalking;

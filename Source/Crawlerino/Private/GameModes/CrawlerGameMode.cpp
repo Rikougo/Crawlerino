@@ -8,6 +8,25 @@
 #include "Characters/Player/CrawlerPlayerController.h"
 
 
+namespace
+{
+	FString GetStatusName(CrawlerStatus Status)
+	{
+		switch (Status)
+		{
+		case CrawlerStatus::Exploration:
+			return "Exploration";
+		case CrawlerStatus::Rest:
+			return "Rest";
+		case CrawlerStatus::Combat:
+			return "Combat";
+		default:
+			return "Unknown";
+		}
+	}
+}
+
+
 void ACrawlerGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -34,9 +53,9 @@ void ACrawlerGameMode::PostLogin(APlayerController* NewPlayer)
 
 void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 {
-	if (_Status == CrawlerStatus::Combat)
+	if (_Status != CrawlerStatus::Exploration)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cannot switch to combat while already in combat"))
+		UE_LOG(LogTemp, Error, TEXT("Cannot switch to combat while not in exploration, current status %s"), *GetStatusName(_Status))
 		return;
 	}
 	
@@ -62,7 +81,7 @@ void ACrawlerGameMode::InitiateCombat(AMonsterPawn* Monster)
 	FDungeonPos PlayerPos = FPPawn->GetPos();
 
 
-	Direction PlayerToMonsterDir = Crawlerino::Utils::ComputeDirection(PlayerPos, MonsterPos);
+	FDirection PlayerToMonsterDir = Crawlerino::Utils::ComputeDirection(PlayerPos, MonsterPos);
 	UE_LOG(LogTemp, Log, TEXT("Player pos : %d %d; Monster pos : %d %d; Direction %d"), PlayerPos.X, PlayerPos.Y, MonsterPos.X, MonsterPos.Y, PlayerToMonsterDir);
 
 	FRotator CombatPawnRotator = FRotator{0.0, Crawlerino::GetYawFromDirection(PlayerToMonsterDir), 0.0};
@@ -133,9 +152,9 @@ void ACrawlerGameMode::CastAction(APawn* Pawn, int Target)
 
 void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 {
-	if (_Status == CrawlerStatus::Exploration)
+	if (_Status != CrawlerStatus::Combat)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cannot switch to exploration while already in exploration"))
+		UE_LOG(LogTemp, Error, TEXT("Cannot exit combat while not in combat, current status %s"), *GetStatusName(_Status))
 		return;
 	}
 
@@ -162,8 +181,37 @@ void ACrawlerGameMode::EndCombat(const CombatResult& Result)
 
 	PlayerController->Possess(_ExplorationPawn);
 	_CombatPawn->Clean();
+
+	_CombatManager.release();
 	
 	_Status = CrawlerStatus::Exploration;
+}
+
+void ACrawlerGameMode::InitiateRest(ABoneFireProp* TargetFire)
+{
+	if (_Status != CrawlerStatus::Exploration)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot rest while not in exploration, current status %s"), *GetStatusName(_Status))
+	}
+
+	_RestFire = TargetFire;
+
+	FDungeonPos ExplorationPos = _ExplorationPawn->GetPos();
+	FDungeonPos FirePos = TargetFire->GetPos();
+	FDirection Dir = Crawlerino::Utils::ComputeDirection(ExplorationPos, FirePos);
+	
+	auto RestPawn = SpawnOrGetRestPawn();
+	RestPawn->Init(ExplorationPos, Dir);
+
+	auto PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	PlayerController->Possess(RestPawn);
+	
+	_Status = CrawlerStatus::Rest;
+}
+
+void ACrawlerGameMode::EndRest()
+{
+	
 }
 
 ACombatPawn* ACrawlerGameMode::SpawnOrGetCombatPawn()
@@ -175,6 +223,18 @@ ACombatPawn* ACrawlerGameMode::SpawnOrGetCombatPawn()
 
 	_CombatPawn = World->SpawnActor<ACombatPawn>(CombatPawnClass);
 	return _CombatPawn;
+}
+
+ARestPawn* ACrawlerGameMode::SpawnOrGetRestPawn()
+{
+	if (_RestPawn) return _RestPawn;
+
+	UWorld* World = GetWorld();
+	if (!World) return nullptr;
+
+	_RestPawn = World->SpawnActor<ARestPawn>(RestPawnClass);
+	return _RestPawn;
+	
 }
 
 bool ACrawlerGameMode::FetchEntity(const APawn* Pawn, CombatEntity& Result) const
@@ -205,18 +265,18 @@ bool ACrawlerGameMode::FetchEntity(int Index, CombatEntity& Result) const
 	return false;
 }
 
-Direction Crawlerino::Utils::ComputeDirection(const FDungeonPos& PlayerPos, const FDungeonPos& MonsterPos)
+FDirection Crawlerino::Utils::ComputeDirection(const FDungeonPos& PlayerPos, const FDungeonPos& MonsterPos)
 {
 	FDungeonPos Delta = MonsterPos - PlayerPos;
 
 	if (abs(Delta.X) > abs(Delta.Y))
 	{
-		if (Delta.X > 0) return Direction::North;
-		else return Direction::South;
+		if (Delta.X > 0) return FDirection::North;
+		else return FDirection::South;
 	} else
 	{
-		if (Delta.Y > 0) return Direction::West;
-		else return Direction::East;
+		if (Delta.Y > 0) return FDirection::West;
+		else return FDirection::East;
 	}
 }
 

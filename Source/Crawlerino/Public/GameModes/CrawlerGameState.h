@@ -10,6 +10,8 @@
 
 #include "CrawlerGameState.generated.h"
 
+class ATerrainProp;
+
 /**
  * 
  */
@@ -30,6 +32,9 @@ private:
 public:
 	UPROPERTY(EditAnywhere)
 	FDungeonPos DungeonSize{32,32};
+
+	UPROPERTY(EditAnywhere)
+	float CellSize = 100.0f;
 protected:
 	ACrawlerGameState() = default;
 protected:
@@ -37,6 +42,12 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:
+	UFUNCTION(BlueprintCallable)
+	FVector GetWorldPos(const FDungeonPos& Pos) const
+	{
+		return FVector{Pos.X * CellSize, Pos.Y * CellSize, CellSize / 2.0f};
+	};
+	
 	UFUNCTION(BlueprintPure)
 	bool IsWalkable(const FDungeonPos& Pos) const;
 	
@@ -50,8 +61,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CrawlerGameState")
 	bool KillMonster(AMonsterPawn* Pawn);
+
+	UFUNCTION(BlueprintCallable, Category = "CrawlerGameState")
+	ATerrainProp* SpawnTerrainProp(TSubclassOf<ATerrainProp> Prop, const FDungeonPos& Pos, const FDirection& Dir);
 private:
 	std::unique_ptr<Crawlerino::DungeonGrid> _DungeonGrid;
 	
 	std::vector<AMonsterPawn*> _Monsters;
+	std::vector<ATerrainProp*> _TerrainProps;
 };

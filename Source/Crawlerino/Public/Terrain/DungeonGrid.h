@@ -11,7 +11,7 @@
 
 // --- CORE UTILS
 UENUM(BlueprintType)
-enum  Direction : uint8
+enum  FDirection : uint8
 {
 	North = 0,
 	West  = 1,
@@ -50,32 +50,32 @@ namespace Crawlerino
 			return Angle;
 		}
 
-		inline Direction DirFromAngle(float Angle)
+		inline FDirection DirFromAngle(float Angle)
 		{
 			if (Angle > 315.0f || Angle < 45.0f)
 			{
-				return Direction::North;
+				return FDirection::North;
 			} else if (Angle > 45.0f && Angle < 135.0f)
 			{
-				return Direction::East;
+				return FDirection::East;
 			} else if (Angle > 135.0f && Angle < 225.0f)
 			{
-				return Direction::South;
+				return FDirection::South;
 			} else /*(Angle > 225.0f && Angle < 315.0f)*/
 			{
-				return Direction::West;
+				return FDirection::West;
 			}
 		}
 	}
 	
-	inline float GetYawFromDirection(Direction direction)
+	inline float GetYawFromDirection(FDirection direction)
 	{
 		switch (direction)
 		{
-			case Direction::North: return   0.0f;
-			case Direction::West:  return  90.0f;
-			case Direction::South: return 180.0f;
-			case Direction::East:  return 270.0f;
+			case FDirection::North: return   0.0f;
+			case FDirection::West:  return  90.0f;
+			case FDirection::South: return 180.0f;
+			case FDirection::East:  return 270.0f;
 			default: return 0;
 		}
 	}
@@ -114,8 +114,8 @@ namespace Crawlerino
 
 		// Room placing utils methods
 		static bool DoesRoomFit(const DungeonGrid& Grid, FDungeonPos TopLeft, FDungeonPos Size);
-		static Direction GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft);
-		static FDungeonPos GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, Direction Facing);
+		static FDirection GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft);
+		static FDungeonPos GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, FDirection Facing);
 		static int GetNearestDoor(int From, const std::vector<FDungeonPos>& Doors, std::vector<bool> Connected);
 	public:
 		DungeonGrid() = delete;

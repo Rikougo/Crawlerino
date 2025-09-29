@@ -7,11 +7,13 @@
 
 #include "Characters/Player/CombatPawn.h"
 #include "Characters/Player/FirstPersonPawn.h"
+#include "Characters/Player/RestPawn.h"
 #include "Characters/Enemies/MonsterPawn.h"
 #include "Combat/CombatManager.h"
 #include "Combat/FStatSheet.h"
 #include "Terrain/DungeonGrid.h"
 #include "Terrain/FDungeonPos.h"
+#include "Terrain/Props/BoneFireProp.h"
 
 #include "CrawlerGameMode.generated.h"
 
@@ -19,6 +21,7 @@ UENUM(BlueprintType)
 enum class CrawlerStatus : uint8
 {
 	Exploration,
+	Rest,
 	Combat
 };
 
@@ -45,6 +48,9 @@ class CRAWLERINO_API ACrawlerGameMode : public AGameModeBase
 public:
 	UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category=Classes)
 	TSubclassOf<ACombatPawn> CombatPawnClass;
+
+	UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category=Classes)
+	TSubclassOf<ARestPawn> RestPawnClass;
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
@@ -67,8 +73,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
 	virtual void EndCombat(const CombatResult& Result);
+
+	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
+	virtual void InitiateRest(ABoneFireProp* TargetFire);
+
+	UFUNCTION(BlueprintCallable, Category="CrawlerGameMode")
+	virtual void EndRest();
 private:
 	ACombatPawn* SpawnOrGetCombatPawn();
+	ARestPawn* SpawnOrGetRestPawn();
 
 	bool FetchEntity(const APawn* Pawn, CombatEntity& Result) const;
 	bool FetchEntity(int Index, CombatEntity& Result) const;
@@ -76,8 +89,11 @@ private:
 	CrawlerStatus _Status;
 
 	AFirstPersonPawn* _ExplorationPawn;
-	ACombatPawn* _CombatPawn;
+	
+	ARestPawn* _RestPawn;
+	ABoneFireProp* _RestFire;
 
+	ACombatPawn* _CombatPawn;
 	std::vector<CombatEntity> _CombatEntities;
 	std::unique_ptr<CombatManager> _CombatManager;
 };
@@ -86,6 +102,6 @@ namespace Crawlerino
 {
 	namespace Utils
 	{
-		Direction ComputeDirection(const FDungeonPos& PlayerPos, const FDungeonPos& MonsterPos);
+		FDirection ComputeDirection(const FDungeonPos& PlayerPos, const FDungeonPos& MonsterPos);
 	}
 }

@@ -8,6 +8,9 @@ AFirstPersonPawn::AFirstPersonPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
+	RootComponent = SphereCollider;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	check(Camera != nullptr);
@@ -22,13 +25,15 @@ void AFirstPersonPawn::BeginPlay()
 	_GameState = GetWorld()->GetGameState<ACrawlerGameState>();
 
 	_TerrainPos = _GameState->GetDungeonGrid().StartPos();
-	SetActorLocation(FVector{
-		(double)_TerrainPos.X * _PawnMovementDelta, (double)_TerrainPos.Y * _PawnMovementDelta, GetActorLocation().Z
-	});
-	_Facing = Direction::North;
+	SetActorLocation(_GameState->GetWorldPos(_TerrainPos));
+	_Facing = FDirection::North;
 	
 	_PlayerController = Cast<APlayerController>(GetController());
 	_PlayerController->SetShowMouseCursor(true);
+
+	SphereCollider->InitSphereRadius(_GameState->CellSize * 1.5f);
+	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AFirstPersonPawn::OnBeginOverlap);
+	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AFirstPersonPawn::OnEndOverlap);
 }
 
 void AFirstPersonPawn::PossessedBy(AController* NewController)
@@ -57,6 +62,8 @@ void AFirstPersonPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Mouse free look input
 	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Started, this, &AFirstPersonPawn::FreeLookButtonInput);
 	Input->BindAction(FreeLookButtonAction, ETriggerEvent::Completed, this, &AFirstPersonPawn::FreeLookButtonInput);
+
+	Input->BindAction(InteractAction, ETriggerEvent::Started, this, &AFirstPersonPawn::OnInteract);
 
 	_PlayerController = Cast<APlayerController>(GetController());
 	
@@ -179,6 +186,29 @@ void AFirstPersonPawn::FinalizeAnimation(ActionType Action)
 	}
 }
 
+void AFirstPersonPawn::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Log, TEXT("BeginOverlap"));
+	if (OtherActor->Implements<UInteractable>())
+	{
+		UE_LOG(LogTemp, Log, TEXT("IInteractable object (%s) entered range. Interactable list size %llu"), *OtherActor->GetName(), _Interactables.size())
+		_Interactables.push_back({OtherActor});
+		UE_LOG(LogTemp, Log, TEXT("Interactable list size after add %llu"), _Interactables.size())
+	}
+}
+void AFirstPersonPawn::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	UE_LOG(LogTemp, Log, TEXT("EndOverlap"));
+	if (OtherActor->Implements<UInteractable>())
+	{
+		UE_LOG(LogTemp, Log, TEXT("IInteractable object (%s) leaved range. Interactable list size %llu"), *OtherActor->GetName(), _Interactables.size())
+		std::erase(_Interactables, TScriptInterface<IInteractable>{OtherActor});
+		UE_LOG(LogTemp, Log, TEXT("Interactable list size after removal %llu"), _Interactables.size())
+	}
+}
+
 FFirstPersonPawnConfig AFirstPersonPawn::GetConfiguration() const
 {
 	return _Config;
@@ -200,18 +230,18 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 	switch (_Facing)
 	{
 	float tmp;
-	case Direction::North:
+	case FDirection::North:
 		break;
-	case Direction::West:
+	case FDirection::West:
 		tmp = InputDir.Y;
 		InputDir.Y = InputDir.X;
 		InputDir.X = -tmp;
 		break;
-	case Direction::South:
+	case FDirection::South:
 		InputDir.X *= -1;
 		InputDir.Y *= -1;
 		break;
-	case Direction::East:
+	case FDirection::East:
 		tmp = InputDir.Y;
 		InputDir.Y = -InputDir.X;
 		InputDir.X = tmp;
@@ -229,12 +259,12 @@ void AFirstPersonPawn::MoveCharacter(const FInputActionInstance& Instance)
 		if (IsXInput)
 		{
 			_TerrainPos.X += Sign;
-			Pos.X += Sign * _PawnMovementDelta;
+			Pos.X += Sign * _GameState->CellSize;
 		}
 		else
 		{
 			_TerrainPos.Y += Sign;
-			Pos.Y += Sign * _PawnMovementDelta;
+			Pos.Y += Sign * _GameState->CellSize;
 		}
 
 		_TargetPosition = FVector2D{Pos};
@@ -246,7 +276,7 @@ void AFirstPersonPawn::LookLeftCharacter(const FInputActionInstance& Instance)
 {
 	if (_IsRotating || _IsLookingAround) return;
 
-	_Facing = (Direction)((int)_Facing > 0 ? ((int)_Facing - 1) : 3);
+	_Facing = (FDirection)((int)_Facing > 0 ? ((int)_Facing - 1) : 3);
 
 	FRotator Rotator = GetActorRotation();
 	Rotator.Yaw = Crawlerino::GetYawFromDirection(_Facing);
@@ -261,7 +291,7 @@ void AFirstPersonPawn::LookRightCharacter(const FInputActionInstance& Instance)
 {
 	if (_IsRotating || _IsLookingAround) return;
 
-	_Facing = (Direction)(((int)_Facing + 1) % 4);
+	_Facing = (FDirection)(((int)_Facing + 1) % 4);
 
 	FRotator Rotator = GetActorRotation();
 	Rotator.Yaw = Crawlerino::GetYawFromDirection(_Facing);
@@ -315,4 +345,15 @@ void AFirstPersonPawn::FreeLookButtonInput(const FInputActionInstance& Instance)
 
 	    _PlayerController->SetInputMode(InputMode);
 	}
+}
+
+void AFirstPersonPawn::OnInteract(const FInputActionInstance& Instance)
+{
+	if (_Interactables.size() == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Can't interact, no interactable object at range"));
+		return;
+	}
+
+	IInteractable::Execute_Interact(_Interactables[0].GetObject());
 }

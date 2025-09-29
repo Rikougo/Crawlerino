@@ -34,7 +34,7 @@ void DungeonGrid::GenerateTerrain(DungeonGrid& Grid, const std::vector<RoomDescr
 
 		FDungeonPos BottomRightCorner = TopLeftCorner + RoomSize;
 
-		Direction DoorDirection = GetRandomDoorDirection(Grid, TopLeftCorner);
+		FDirection DoorDirection = GetRandomDoorDirection(Grid, TopLeftCorner);
 		DoorPositions[i] = GetRandomDoorPos(TopLeftCorner, BottomRightCorner, DoorDirection);;
 
 		// Fill room
@@ -109,9 +109,9 @@ bool DungeonGrid::DoesRoomFit(const DungeonGrid& Grid, FDungeonPos TopLeft, FDun
 	return true;
 }
 
-Direction DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft)
+FDirection DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonPos TopLeft)
 {
-	Direction Dir = Direction::North;
+	FDirection Dir = FDirection::North;
 	int Dice = FMath::RandRange(0, 1);
 	if (TopLeft.X < Grid.Width() / 2.0)
 	{
@@ -139,7 +139,7 @@ Direction DungeonGrid::GetRandomDoorDirection(const DungeonGrid& Grid, FDungeonP
 	return Dir;
 }
 
-FDungeonPos DungeonGrid::GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, Direction Facing)
+FDungeonPos DungeonGrid::GetRandomDoorPos(FDungeonPos TopLeft, FDungeonPos BottomRight, FDirection Facing)
 {
 	switch (Facing)
 	{

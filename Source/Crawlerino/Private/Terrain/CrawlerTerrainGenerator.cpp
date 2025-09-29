@@ -32,6 +32,8 @@ void ACrawlerTerrainGenerator::GenerateTerrain() const
 	TArray<FVector2D> UVs;
 
 	UE_LOG(LogTemp, Display, TEXT("Create terrain of size %d %d"), _GameState->GetDungeonGrid().Width(), _GameState->GetDungeonGrid().Height());
+
+	auto CellSize = _GameState->CellSize;
 	
 	// Create ground mesh
 	for (int yIdx = 0; yIdx < _GameState->GetDungeonGrid().Height(); yIdx++)
@@ -90,7 +92,7 @@ void ACrawlerTerrainGenerator::TryGenerateWall(TArray<FVector>& Vertices,
 	TArray<FVector>& Normals,
 	TArray<int32>& Triangles,
 	TArray<FVector2D>& UVs,
-	int X, int Y, Direction Direction) const
+	int X, int Y, FDirection Direction) const
 {
 	int nX = X, nY = Y;
 	FVector Normal;
@@ -117,6 +119,7 @@ void ACrawlerTerrainGenerator::TryGenerateWall(TArray<FVector>& Vertices,
 	bool IsValidCoords = _GameState->GetDungeonGrid().IsValidPosition(FDungeonPos{nX, nY});
 	float Value = IsValidCoords ? _GameState->GetDungeonGrid().GetValue(nX, nY) : 0.0f;
 
+	auto CellSize = _GameState->CellSize;
 	FVector OriginCenter = FVector(X * CellSize, Y * CellSize, 0.0f);
 
 	// Create walls if empty case 

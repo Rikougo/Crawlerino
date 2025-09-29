@@ -17,15 +17,6 @@ UCLASS()
 class CRAWLERINO_API ACrawlerTerrainGenerator : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	ACrawlerGameState* _GameState;
-	
-	UProceduralMeshComponent* _Mesh;
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CrawlerTerrain)
-	int CellSize = 100;
-	
 public:	
 	// Sets default values for this actor's properties
 	ACrawlerTerrainGenerator();
@@ -37,5 +28,10 @@ private:
 
 	void TryGenerateWall(TArray<FVector>& Vertices, TArray<FVector>& Normals,
 	                     TArray<int32>& Triangles, TArray<FVector2D>& UVs,
-	                     int X, int Y, Direction Direction) const;
+	                     int X, int Y, FDirection Direction) const;
+
+private:
+	ACrawlerGameState* _GameState;
+	
+	UProceduralMeshComponent* _Mesh;
 };
