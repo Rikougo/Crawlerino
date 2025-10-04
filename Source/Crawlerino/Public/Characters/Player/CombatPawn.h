@@ -7,7 +7,8 @@
 #include "GameFramework/Pawn.h"
 
 #include "GameModes/CrawlerGameState.h"
-#include "UE/CrawlerDungeonSubsystem.h"
+#include "Terrain/DungeonGrid.h"
+
 #include "CombatPawn.generated.h"
 
 UCLASS()

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 
-#include "UE/CrawlerDungeonSubsystem.h"
+#include "Terrain/DungeonGrid.h"
 
 #include "MonsterPawn.generated.h"
 
